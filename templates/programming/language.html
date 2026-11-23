@@ -1,0 +1,141 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ language.name }} | ShadowNet Programming{% endblock %}
+
+{% block content %}
+<style>
+.language-page {
+    max-width: 1150px;
+    margin: auto;
+    padding: 30px 18px;
+    color: #eaf4ff;
+}
+.language-hero {
+    padding: 35px;
+    border: 1px solid #174b68;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #071b2d, #15102d);
+    box-shadow: 0 0 25px #00d9ff18;
+}
+.language-hero h1 {
+    color: #00e5ff;
+    font-size: clamp(30px, 5vw, 46px);
+    margin-bottom: 12px;
+}
+.language-hero p {
+    color: #b9c9da;
+    line-height: 1.7;
+}
+.language-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+.language-meta span {
+    background: #102b40;
+    border: 1px solid #176080;
+    padding: 8px 13px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 25px;
+}
+.level-card {
+    display: block;
+    text-decoration: none;
+    color: #eaf4ff;
+    background: #0b1928;
+    border: 1px solid #193c55;
+    border-radius: 15px;
+    padding: 22px;
+    transition: .2s;
+}
+.level-card:hover {
+    border-color: #00e5ff;
+    transform: translateY(-4px);
+    box-shadow: 0 0 18px #00e5ff22;
+}
+.level-card h3 {
+    color: #00e5ff;
+    margin-bottom: 10px;
+}
+.level-card p {
+    color: #b7c6d6;
+    line-height: 1.6;
+}
+.level-card .open {
+    color: #a78bfa;
+    display: inline-block;
+    margin-top: 14px;
+}
+.back-link {
+    display: inline-block;
+    color: #00e5ff;
+    text-decoration: none;
+    margin-bottom: 20px;
+}
+</style>
+
+<div class="language-page">
+
+    <a class="back-link" href="{{ url_for('programming.programming_home') }}">
+        ← Back to Programming Department
+    </a>
+
+    <section class="language-hero">
+        <h1>{{ language.name }}</h1>
+
+        <p>
+            {{ language.description or
+            "Develop your programming skills through structured lessons,
+            practical coding exercises and real-world projects." }}
+        </p>
+
+        <div class="language-meta">
+            <span>ShadowNet Academy</span>
+            <span>4 Learning Levels</span>
+            <span>Practical Training</span>
+        </div>
+    </section>
+
+    <h2 style="margin-top:35px;">Choose Your Learning Level</h2>
+
+    <p style="color:#aebed0;">
+        Follow the learning path from Beginner to Professional.
+    </p>
+
+    <div class="level-grid">
+
+        {% set levels = [
+            ("beginner", "01", "Beginner",
+             "Start with fundamentals, syntax, variables and basic programs."),
+            ("intermediate", "02", "Intermediate",
+             "Develop stronger logic, functions, data structures and applications."),
+            ("advanced", "03", "Advanced",
+             "Study complex concepts, architecture, optimization and testing."),
+            ("professional", "04", "Professional",
+             "Build production-level systems using professional engineering practices.")
+        ] %}
+
+        {% for level_id, number, title, description in levels %}
+        <a class="level-card"
+           href="{{ url_for('programming.programming_level',
+                            slug=language.slug,
+                            level_id=level_id) }}">
+
+            <small style="color:#8b9db2;">LEVEL {{ number }}</small>
+            <h3>{{ title }}</h3>
+            <p>{{ description }}</p>
+            <span class="open">Explore level →</span>
+        </a>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}
