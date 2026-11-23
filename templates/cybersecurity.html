@@ -1,4 +1,1739 @@
 
+<!-- =====================================================
+ SHADOWNET ACADEMY
+ CYBERSECURITY: CHAPTER 1
+ COMPLETE CHAPTER CONTENT
+===================================================== -->
+
+<section class="cyber-chapter" id="chapter-1">
+
+    <!-- CHAPTER HEADER -->
+
+    <header class="chapter-header">
+        <div class="chapter-brand">SHADOWNET618 ACADEMY</div>
+
+        <div class="chapter-number">CHAPTER 01</div>
+
+        <h1>What Is Cybersecurity?</h1>
+
+        <p class="chapter-subtitle">
+            Building the conceptual foundation of cybersecurity.
+            Understand what security protects, who attacks systems,
+            and why security defenses fail.
+        </p>
+
+        <div class="chapter-meta">
+            <span>BEGINNER</span>
+            <span>FREE COURSE</span>
+            <span>3 TO 5 HOURS</span>
+        </div>
+    </header>
+
+    <!-- INTRODUCTION -->
+
+    <article class="chapter-section">
+
+        <h2>Chapter Introduction</h2>
+
+        <p>
+            This chapter establishes the conceptual foundation for the
+            entire book. You do not need any technical background, but
+            you do need to develop a <strong>security mindset</strong>,
+            the ability to examine every system, every piece of data,
+            and every person the way a defender would.
+        </p>
+
+        <p>This chapter covers three core areas:</p>
+
+        <ul>
+            <li>
+                The CIA Triad, what security is trying to achieve.
+            </li>
+            <li>
+                The threat actor landscape, who attacks and why.
+            </li>
+            <li>
+                Why security fails, where defense breaks down.
+            </li>
+        </ul>
+
+    </article>
+
+    <!-- 1.1 CIA TRIAD -->
+
+    <article class="chapter-section">
+
+        <h2>1.1 The CIA Triad: Everything in Security Revolves Around Three Things</h2>
+
+        <p>
+            The CIA Triad is the first principle of information security.
+            Every security control, every attack, and every incident can
+            ultimately be reduced to the maintenance or compromise of
+            one of these three properties.
+        </p>
+
+        <div class="cia-grid">
+
+            <!-- CONFIDENTIALITY -->
+
+            <div class="cia-card">
+
+                <div class="cia-icon">🔐</div>
+
+                <h3>Confidentiality</h3>
+
+                <p>
+                    Data can only be accessed and read by authorized
+                    parties. Unauthorized individuals, even if they
+                    physically possess the storage medium or intercept
+                    data in transit, cannot understand its contents.
+                </p>
+
+                <div class="example-box">
+                    <strong>Plain-language version</strong>
+
+                    <p>
+                        Only you know your bank card PIN. Even if someone
+                        picks up your card, they cannot withdraw money
+                        without the PIN.
+                    </p>
+                </div>
+
+                <h4>Attacks on Confidentiality</h4>
+
+                <p>
+                    Attacks on confidentiality are called
+                    <strong>disclosure attacks</strong>.
+                </p>
+
+                <ul>
+                    <li>
+                        A hacker breaches a database and steals user
+                        personal information.
+                    </li>
+                    <li>
+                        An employee sends a confidential file to a
+                        personal email account.
+                    </li>
+                    <li>
+                        A network sniffer captures unencrypted
+                        login credentials.
+                    </li>
+                </ul>
+
+                <h4>Core Protection Methods</h4>
+
+                <ol>
+                    <li>
+                        <strong>Encryption:</strong>
+                        Converts plaintext into ciphertext. Only the
+                        holder of the key can reverse it. HTTPS is the
+                        classic example of encryption in transit.
+                    </li>
+
+                    <li>
+                        <strong>Access Control:</strong>
+                        Ensures only authenticated and authorized
+                        individuals can access specific resources.
+                    </li>
+
+                    <li>
+                        <strong>Data Masking:</strong>
+                        Replaces real sensitive data with fictitious
+                        data in non-production environments.
+                    </li>
+                </ol>
+
+            </div>
+
+            <!-- INTEGRITY -->
+
+            <div class="cia-card">
+
+                <div class="cia-icon">🛡️</div>
+
+                <h3>Integrity</h3>
+
+                <p>
+                    Data remains accurate, complete, and unaltered
+                    throughout its lifecycle, including transmission,
+                    storage, and processing. Only authorized parties
+                    can modify data.
+                </p>
+
+                <div class="example-box">
+                    <strong>Plain-language version</strong>
+
+                    <p>
+                        You transfer $100. The bank system must record
+                        $100, not $1,000 and not $1. If someone alters
+                        the amount in transit, integrity has been violated.
+                    </p>
+                </div>
+
+                <h4>Attacks on Integrity</h4>
+
+                <p>
+                    Attacks on integrity are called
+                    <strong>alteration attacks</strong>.
+                </p>
+
+                <ul>
+                    <li>
+                        An attacker modifies records in a database,
+                        for example changing an account balance.
+                    </li>
+                    <li>
+                        A man-in-the-middle attack tampers with data
+                        packets in transit.
+                    </li>
+                    <li>
+                        Malware infects a system and replaces
+                        legitimate files.
+                    </li>
+                </ul>
+
+                <h4>Core Protection Methods</h4>
+
+                <ol>
+                    <li>
+                        <strong>Hash Verification:</strong>
+                        Compute a hash value, for example SHA-256,
+                        for a file or message. The recipient recomputes
+                        and compares. Any tiny change produces a
+                        completely different hash.
+                    </li>
+
+                    <li>
+                        <strong>Digital Signatures:</strong>
+                        Not only verify that data has not been tampered
+                        with, but also confirm the authenticity of
+                        the source.
+                    </li>
+
+                    <li>
+                        <strong>Change Management:</strong>
+                        All system changes require approval and
+                        documentation to prevent unauthorized
+                        modifications.
+                    </li>
+                </ol>
+
+            </div>
+
+            <!-- AVAILABILITY -->
+
+            <div class="cia-card">
+
+                <div class="cia-icon">🌐</div>
+
+                <h3>Availability</h3>
+
+                <p>
+                    Systems and data are accessible and usable by
+                    authorized users when they need them.
+                </p>
+
+                <div class="example-box">
+                    <strong>Plain-language version</strong>
+
+                    <p>
+                        A hospital's medical records system must open
+                        when a doctor needs it. If the system is down,
+                        even perfectly intact and strongly encrypted
+                        data cannot serve the patient.
+                    </p>
+                </div>
+
+                <h4>Attacks on Availability</h4>
+
+                <p>
+                    Attacks on availability are called
+                    <strong>destruction attacks</strong>.
+                </p>
+
+                <ul>
+                    <li>
+                        <strong>DDoS attacks:</strong>
+                        Flood a server with massive traffic so legitimate
+                        users cannot access it.
+                    </li>
+
+                    <li>
+                        <strong>Ransomware:</strong>
+                        Encrypts files and demands payment, directly
+                        depriving users of access to their data.
+                    </li>
+
+                    <li>
+                        <strong>Hardware failure or natural disaster:</strong>
+                        Physical-layer loss of availability.
+                    </li>
+                </ul>
+
+                <h4>Core Protection Methods</h4>
+
+                <ol>
+                    <li>
+                        <strong>Redundancy and Backups:</strong>
+                        Follow the 3-2-1 rule: three copies, two media
+                        types, and one offsite.
+                    </li>
+
+                    <li>
+                        <strong>Disaster Recovery and Business Continuity:</strong>
+                        Ensure rapid service restoration after a disaster.
+                    </li>
+
+                    <li>
+                        <strong>DDoS Protection and Load Balancing:</strong>
+                        Distribute traffic pressure to prevent
+                        single-point overload.
+                    </li>
+                </ol>
+
+            </div>
+
+        </div>
+
+        <!-- TARGET CASE -->
+
+        <div class="case-study">
+
+            <span class="case-label">REAL-WORLD CASE STUDY</span>
+
+            <h3>2013 Target Data Breach</h3>
+
+            <p>
+                In the 2013 Target data breach, attackers entered
+                Target's internal network through a third-party vendor's
+                credentials and ultimately stole 40 million credit card
+                records.
+            </p>
+
+            <p>
+                Once confidentiality was broken, the result was direct
+                financial loss and reputational collapse.
+            </p>
+
+            <strong>Security lesson:</strong>
+
+            <p>
+                Third-party access must be controlled. An organization
+                must consider the security of its suppliers and
+                connected services.
+            </p>
+
+        </div>
+
+        <!-- RANSOMWARE -->
+
+        <div class="example-box">
+
+            <h3>The Nature of Ransomware</h3>
+
+            <p>
+                Ransomware attacks both availability and confidentiality.
+                Users cannot access their own files, and attackers may
+                steal data and threaten to publish it.
+            </p>
+
+            <p>
+                This is a classic example of a combination punch
+                in modern attacks.
+            </p>
+
+        </div>
+
+        <!-- CIA BALANCE -->
+
+        <h3>1.1.4 The CIA Balance: There Is No All-Powerful Security</h3>
+
+        <p>
+            There is inherent tension among the three properties.
+            Overemphasizing confidentiality through extreme encryption
+            and access restrictions can harm availability because
+            legitimate users may be locked out.
+        </p>
+
+        <p>
+            Overemphasizing availability by opening all ports for
+            convenience can sacrifice confidentiality.
+        </p>
+
+        <p>
+            The essence of security work is finding a reasonable
+            balance among the three for a given business context,
+            not maximizing any single property.
+        </p>
+
+    </article>
+
+    <!-- 1.2 THREAT ACTORS -->
+
+    <article class="chapter-section">
+
+        <h2>1.2 Threat Actors: Who Attacks, and What They Want</h2>
+
+        <p>
+            To defend effectively, you must understand attackers.
+            Threat actors are classified by motivation and resource
+            capability, not merely technical skill.
+        </p>
+
+        <!-- CYBERCRIMINALS -->
+
+        <div class="threat-card">
+
+            <h3>1.2.1 Cybercriminals</h3>
+
+            <p><strong>Motivation:</strong> Financial gain.</p>
+
+            <p>
+                This is the most prevalent and persistent threat source.
+            </p>
+
+            <h4>Operating Model</h4>
+
+            <p>
+                Modern cybercrime is highly industrialized.
+                Cybercrime as a Service platforms allow people with
+                no technical skill to purchase attack tools and services.
+                Ransomware, phishing kits, and stolen credentials are
+                all openly priced on the dark web.
+            </p>
+
+            <h4>Common Tactics</h4>
+
+            <ul>
+                <li>Phishing emails.</li>
+                <li>Ransomware.</li>
+                <li>Business email compromise (BEC).</li>
+                <li>Credential theft and sale.</li>
+            </ul>
+
+            <h4>What This Means for You</h4>
+
+            <p>
+                Any organization with monetizable data is a target.
+                Small and mid-sized businesses are especially at risk
+                because their defenses are often weaker while their
+                data is equally valuable.
+            </p>
+
+        </div>
+
+        <!-- INSIDERS -->
+
+        <div class="threat-card">
+
+            <h3>1.2.2 Insiders</h3>
+
+            <p>
+                <strong>Motivation:</strong>
+                Financial gain, revenge, or simple ignorance and negligence.
+            </p>
+
+            <p>
+                Insiders fall into two categories.
+            </p>
+
+            <h4>Malicious Insiders</h4>
+
+            <p>
+                Intentionally abuse their legitimate access to harm
+                the organization.
+            </p>
+
+            <ul>
+                <li>
+                    A salesperson bulk-downloading the customer list
+                    before leaving.
+                </li>
+
+                <li>
+                    An IT administrator accepting a bribe.
+                </li>
+            </ul>
+
+            <h4>Negligent Insiders</h4>
+
+            <p>
+                They have no malicious intention, but their careless
+                actions endanger security.
+            </p>
+
+            <ul>
+                <li>An ordinary employee clicking a phishing link.</li>
+                <li>
+                    An engineer misconfiguring cloud storage permissions.
+                </li>
+            </ul>
+
+            <h4>Why Insiders Are Especially Dangerous</h4>
+
+            <p>
+                They already have access. Firewalls and perimeter
+                defenses are nearly useless against malicious insider
+                behavior.
+            </p>
+
+            <p>
+                Insider threat mitigation relies more on behavioral
+                monitoring, least privilege, and offboarding process
+                management.
+            </p>
+
+        </div>
+
+        <!-- NATION STATE -->
+
+        <div class="threat-card">
+
+            <h3>1.2.3 Nation-State Actors</h3>
+
+            <p>
+                <strong>Motivation:</strong>
+                Espionage, political interference, economic competition,
+                and military objectives.
+            </p>
+
+            <h4>Characteristics</h4>
+
+            <p>
+                The most resource-rich, technically advanced, and
+                patient adversaries. They typically conduct long-term
+                persistence operations known as Advanced Persistent
+                Threats (APT).
+            </p>
+
+            <p>
+                They may reside in target networks for months or even
+                years without detection while continuously collecting
+                intelligence.
+            </p>
+
+            <h4>Targets</h4>
+
+            <ul>
+                <li>Government networks.</li>
+                <li>Critical infrastructure, including power grids.</li>
+                <li>Water treatment systems.</li>
+                <li>Transportation systems.</li>
+                <li>Defense contractors.</li>
+                <li>Large enterprises' intellectual property.</li>
+            </ul>
+
+            <h4>What This Means for You</h4>
+
+            <p>
+                If you are an ordinary individual or small business,
+                the likelihood of being a direct nation-state target
+                is extremely low.
+            </p>
+
+            <p>
+                However, these actors' tools and techniques eventually
+                trickle down into the cybercrime ecosystem. The ransomware
+                you face years from now may use exploit code developed
+                today by a state cyber unit.
+            </p>
+
+        </div>
+
+        <!-- HACKTIVISTS -->
+
+        <div class="threat-card">
+
+            <h3>1.2.4 Hacktivists</h3>
+
+            <p>
+                <strong>Motivation:</strong>
+                Political, social, or ideological causes.
+            </p>
+
+            <p>
+                The goal is publicity or forcing change.
+            </p>
+
+            <h4>Common Tactics</h4>
+
+            <ul>
+                <li>
+                    <strong>DDoS attacks:</strong>
+                    Taking a target website offline as protest.
+                </li>
+
+                <li>
+                    <strong>Website defacement:</strong>
+                    Leaving political messages on a target's site.
+                </li>
+
+                <li>
+                    <strong>Data leaks:</strong>
+                    Publishing a target organization's sensitive
+                    information to embarrass it.
+                </li>
+            </ul>
+
+            <h4>What This Means for You</h4>
+
+            <p>
+                If your organization operates in a controversial
+                industry such as energy, finance, or defense, or
+                publicly takes positions on political issues,
+                you may become a target.
+            </p>
+
+            <p>
+                Hacktivist attacks usually aim to cause embarrassment
+                rather than substantive damage.
+            </p>
+
+        </div>
+
+        <!-- SCRIPT KIDDIES -->
+
+        <div class="threat-card">
+
+            <h3>1.2.5 Script Kiddies</h3>
+
+            <p>
+                <strong>Definition:</strong>
+                Individuals with very low technical skill who use
+                ready-made tools developed by others to attack.
+            </p>
+
+            <p>
+                <strong>Motivation:</strong>
+                Showing off, curiosity, and seeking recognition.
+            </p>
+
+            <h4>Threat Level</h4>
+
+            <p>
+                A single script kiddie's threat is limited, but their
+                numbers are vast. Their attacks are often automatically
+                blocked by security devices.
+            </p>
+
+            <p>
+                However, a vulnerability exploited by a script kiddie
+                and one exploited by a nation-state can cause the same
+                immediate damage. Vulnerabilities do not care about
+                the attacker's identity.
+            </p>
+
+        </div>
+
+    </article>
+
+    <!-- 1.3 WHY SECURITY FAILS -->
+
+    <article class="chapter-section">
+
+        <h2>1.3 Why Security Fails: Four Fundamental Problems of Defense</h2>
+
+        <p>
+            The CIA Triad tells you what to protect. Threat actors tell
+            you who is attacking. But why do we still constantly see
+            data breaches and compromised systems?
+        </p>
+
+        <p>
+            The following four structural reasons are key to understanding
+            cybersecurity practice.
+        </p>
+
+        <!-- HUMAN FACTOR -->
+
+        <div class="failure-card">
+
+            <h3>1.3.1 The Human Factor: Even the Strongest Firewall Can Be Persuaded</h3>
+
+            <p>
+                Technical controls can be nearly perfect, but people
+                can be manipulated. Attackers know that a well-crafted
+                phishing email is more effective than millions of
+                dollars spent hardening the network perimeter.
+            </p>
+
+            <h4>Social Engineering and Human Biases</h4>
+
+            <ul>
+                <li>
+                    <strong>Authority Bias:</strong>
+                    Impersonating the CEO to demand a financial transfer.
+                </li>
+
+                <li>
+                    <strong>Urgency:</strong>
+                    Claiming your account will be frozen within 24 hours.
+                </li>
+
+                <li>
+                    <strong>Fear:</strong>
+                    Threatening legal consequences if you do not
+                    click a link.
+                </li>
+            </ul>
+
+            <p>
+                The security industry calls employees the
+                <strong>Human Firewall</strong>. They are both the
+                last line of defense and the weakest link.
+            </p>
+
+            <p>
+                Technical measures such as email filtering and
+                multi-factor authentication can reduce risk but
+                cannot eliminate the human variable.
+            </p>
+
+        </div>
+
+        <!-- COMPLEXITY -->
+
+        <div class="failure-card">
+
+            <h3>1.3.2 Complexity: The Bigger the System, the More Vulnerabilities</h3>
+
+            <p>
+                Modern IT systems are stacked from dozens of components:
+            </p>
+
+            <ul>
+                <li>Operating systems.</li>
+                <li>Databases.</li>
+                <li>Web servers.</li>
+                <li>Middleware.</li>
+                <li>Third-party libraries.</li>
+                <li>Cloud services.</li>
+                <li>APIs.</li>
+                <li>Container orchestration platforms.</li>
+            </ul>
+
+            <p>
+                Each component has its own vulnerability history,
+                configuration options, and update cycle.
+            </p>
+
+            <p>
+                A typical web application may depend on hundreds
+                of open-source libraries. A known vulnerability in
+                any one of them, or even an undiscovered zero-day,
+                can become an attack entry point.
+            </p>
+
+            <p>
+                You cannot protect what you do not understand,
+                and modern system complexity has exceeded what
+                any single person can fully comprehend.
+            </p>
+
+        </div>
+
+        <!-- ASYMMETRIC WARFARE -->
+
+        <div class="failure-card">
+
+            <h3>1.3.3 Asymmetric Warfare: The Attacker Only Needs to Succeed Once</h3>
+
+            <p>
+                Defenders must be correct at all times, at all entry
+                points, and at all layers. Attackers only need to find
+                a breakthrough at one time, at one entry point,
+                at one layer.
+            </p>
+
+            <p>
+                This asymmetry means that even if your defenses cover
+                99% of the attack surface, the remaining 1% can still
+                be exploited.
+            </p>
+
+            <p>
+                Attackers will keep trying until they find that 1%.
+                This is not a reason to give up on defense. It is a
+                reason to understand the necessity of
+                <strong>Defense in Depth</strong>.
+            </p>
+
+            <p>
+                Defense in Depth means not relying on a single control,
+                but using multiple layers to increase the attacker's cost.
+            </p>
+
+        </div>
+
+        <!-- GOOD ENOUGH -->
+
+        <div class="failure-card">
+
+            <h3>1.3.4 The Good Enough Illusion: Security Is a Process, Not a Product</h3>
+
+            <p>
+                Many organizations believe that buying a firewall,
+                EDR, and SIEM means they are secure.
+            </p>
+
+            <p>
+                This is a dangerous illusion. Security products are
+                only tools.
+            </p>
+
+            <p>
+                Security is a continuous process:
+            </p>
+
+            <ol>
+                <li>Monitor.</li>
+                <li>Detect.</li>
+                <li>Respond.</li>
+                <li>Remediate.</li>
+                <li>Monitor again.</li>
+            </ol>
+
+            <p>
+                Attack techniques evolve, your systems change,
+                and the threat surface expands. A control that was
+                effective yesterday may be obsolete tomorrow.
+            </p>
+
+            <p>
+                The core work of a security team is not deploy and done.
+                It is continuously contending with a constantly
+                changing adversary.
+            </p>
+
+        </div>
+
+    </article>
+
+    <!-- CHAPTER SUMMARY -->
+
+    <article class="chapter-section">
+
+        <h2>Chapter Summary</h2>
+
+        <div class="summary-table-wrapper">
+
+            <table class="summary-table">
+
+                <thead>
+                    <tr>
+                        <th>Concept</th>
+                        <th>Key Takeaway</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>CIA Triad</td>
+                        <td>
+                            Confidentiality means not read by unauthorized
+                            parties. Integrity means not tampered with.
+                            Availability means accessible when needed.
+                            Every attack targets one or more of these.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Threat Actors</td>
+                        <td>
+                            Cybercriminals seek money. Insiders already
+                            have access. Nation-states seek intelligence.
+                            Hacktivists pursue ideology. Script kiddies
+                            seek recognition or entertainment.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Why Security Fails</td>
+                        <td>
+                            People can be manipulated. Systems are complex.
+                            Attackers need only one successful entry point.
+                            Security is a continuous process, not a
+                            one-time deployment.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </article>
+
+    <!-- NEXT CHAPTER PREVIEW -->
+
+    <article class="chapter-section next-chapter">
+
+        <span class="case-label">UP NEXT</span>
+
+        <h2>Chapter 2: Networking Fundamentals</h2>
+
+        <p>
+            Chapter 2 moves into networking fundamentals. You will learn
+            how data travels from point A to point B across a network,
+            and where an attacker can strike at each stage.
+        </p>
+
+        <p>
+            A security practitioner without networking knowledge is
+            like a doctor who does not understand anatomy. They can
+            only guess, not diagnose precisely.
+        </p>
+
+    </article>
+
+    <!-- CHAPTER EXERCISES -->
+
+    <article class="chapter-section">
+
+        <h2>Chapter 1 Exercises</h2>
+
+        <p><strong>Estimated time: 3 to 5 hours.</strong></p>
+
+        <div class="exercise-card">
+
+            <h3>Exercise 1: CIA Analysis Exercise</h3>
+
+            <p>
+                Pick a system you use regularly, for example WhatsApp,
+                online banking, or your school's student portal.
+            </p>
+
+            <p>
+                List two specific measures it uses to protect
+                confidentiality, integrity, and availability respectively.
+            </p>
+
+            <ul>
+                <li>Identify two confidentiality measures.</li>
+                <li>Identify two integrity measures.</li>
+                <li>Identify two availability measures.</li>
+            </ul>
+
+        </div>
+
+        <div class="exercise-card">
+
+            <h3>Exercise 2: Threat Actor Matching</h3>
+
+            <p>
+                Read a recent security news story and determine which
+                category from this chapter the attacker most likely
+                belongs to.
+            </p>
+
+            <p>
+                List the evidence for your judgment.
+            </p>
+
+        </div>
+
+        <div class="exercise-card">
+
+            <h3>Exercise 3: Why Security Fails Reflection</h3>
+
+            <p>
+                Recall a security incident you or someone close to
+                you experienced, even something as simple as clicking
+                a suspicious link.
+            </p>
+
+            <p>
+                Explain why it happened using one of the four reasons
+                in Section 1.3.
+            </p>
+
+        </div>
+
+        <div class="exercise-card">
+
+            <h3>Exercise 4: CISA Free Course</h3>
+
+            <p>
+                Register for and begin CISA's Introduction to
+                Cybersecurity course, completing its modules on
+                the CIA Triad and threat fundamentals.
+            </p>
+
+        </div>
+
+    </article>
+
+    <!-- KNOWLEDGE TEST -->
+
+    <article class="chapter-section" id="chapter-quiz">
+
+        <h2>Chapter 1 Knowledge Test</h2>
+
+        <p>
+            Test your understanding of cybersecurity fundamentals.
+            Select one answer for each question.
+        </p>
+
+        <form id="cyberChapterQuiz">
+
+            <div class="quiz-question">
+
+                <h3>Question 1</h3>
+
+                <p>What are the three properties of the CIA Triad?</p>
+
+                <label>
+                    <input type="radio" name="q1" value="a">
+                    Confidentiality, Integrity, Availability
+                </label>
+
+                <label>
+                    <input type="radio" name="q1" value="b">
+                    Control, Inspection, Access
+                </label>
+
+                <label>
+                    <input type="radio" name="q1" value="c">
+                    Coding, Internet, Applications
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q1"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 2</h3>
+
+                <p>
+                    Which property protects information from
+                    unauthorized reading?
+                </p>
+
+                <label>
+                    <input type="radio" name="q2" value="a">
+                    Availability
+                </label>
+
+                <label>
+                    <input type="radio" name="q2" value="b">
+                    Confidentiality
+                </label>
+
+                <label>
+                    <input type="radio" name="q2" value="c">
+                    Integrity
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q2"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 3</h3>
+
+                <p>
+                    Which property protects data from unauthorized
+                    modification?
+                </p>
+
+                <label>
+                    <input type="radio" name="q3" value="a">
+                    Integrity
+                </label>
+
+                <label>
+                    <input type="radio" name="q3" value="b">
+                    Availability
+                </label>
+
+                <label>
+                    <input type="radio" name="q3" value="c">
+                    Encryption
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q3"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 4</h3>
+
+                <p>What is the main motivation of cybercriminals?</p>
+
+                <label>
+                    <input type="radio" name="q4" value="a">
+                    Financial gain
+                </label>
+
+                <label>
+                    <input type="radio" name="q4" value="b">
+                    Scientific research
+                </label>
+
+                <label>
+                    <input type="radio" name="q4" value="c">
+                    System maintenance
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q4"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 5</h3>
+
+                <p>What does APT stand for?</p>
+
+                <label>
+                    <input type="radio" name="q5" value="a">
+                    Advanced Protection Tool
+                </label>
+
+                <label>
+                    <input type="radio" name="q5" value="b">
+                    Advanced Persistent Threat
+                </label>
+
+                <label>
+                    <input type="radio" name="q5" value="c">
+                    Automated Password Test
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q5"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 6</h3>
+
+                <p>What motivates hacktivists?</p>
+
+                <label>
+                    <input type="radio" name="q6" value="a">
+                    Political, social, or ideological causes
+                </label>
+
+                <label>
+                    <input type="radio" name="q6" value="b">
+                    Only financial gain
+                </label>
+
+                <label>
+                    <input type="radio" name="q6" value="c">
+                    Hardware maintenance
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q6"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 7</h3>
+
+                <p>What is social engineering?</p>
+
+                <label>
+                    <input type="radio" name="q7" value="a">
+                    Building network cables
+                </label>
+
+                <label>
+                    <input type="radio" name="q7" value="b">
+                    Manipulating people into unsafe actions
+                </label>
+
+                <label>
+                    <input type="radio" name="q7" value="c">
+                    Installing operating systems
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q7"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 8</h3>
+
+                <p>What is Defense in Depth?</p>
+
+                <label>
+                    <input type="radio" name="q8" value="a">
+                    Using one powerful password
+                </label>
+
+                <label>
+                    <input type="radio" name="q8" value="b">
+                    Disabling all network access
+                </label>
+
+                <label>
+                    <input type="radio" name="q8" value="c">
+                    Using multiple layers of security controls
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q8"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 9</h3>
+
+                <p>What is a negligent insider?</p>
+
+                <label>
+                    <input type="radio" name="q9" value="a">
+                    Someone who accidentally creates security risks
+                </label>
+
+                <label>
+                    <input type="radio" name="q9" value="b">
+                    A national intelligence agency
+                </label>
+
+                <label>
+                    <input type="radio" name="q9" value="c">
+                    An external network provider
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q9"></p>
+
+            </div>
+
+            <div class="quiz-question">
+
+                <h3>Question 10</h3>
+
+                <p>
+                    Why must cybersecurity remain a continuous process?
+                </p>
+
+                <label>
+                    <input type="radio" name="q10" value="a">
+                    Systems and attack techniques change over time
+                </label>
+
+                <label>
+                    <input type="radio" name="q10" value="b">
+                    Security products never work
+                </label>
+
+                <label>
+                    <input type="radio" name="q10" value="c">
+                    Networks never change
+                </label>
+
+                <p class="quiz-explanation" id="explanation-q10"></p>
+
+            </div>
+
+            <button type="button" onclick="submitCyberChapterQuiz()">
+                SUBMIT KNOWLEDGE TEST
+            </button>
+
+            <button type="button" onclick="resetCyberChapterQuiz()">
+                RETAKE TEST
+            </button>
+
+            <div id="cyberChapterResult" aria-live="polite"></div>
+
+        </form>
+
+    </article>
+
+    <!-- END OF CHAPTER -->
+
+    <footer class="chapter-footer">
+
+        <h2>Chapter 1 Completed?</h2>
+
+        <p>
+            Review your answers and complete the practical exercises
+            before moving to the next chapter.
+        </p>
+
+        <a href="#chapter-1" class="chapter-top-button">
+            Back to Chapter Start
+        </a>
+
+    </footer>
+
+</section>
+
+
+<!-- =====================================================
+ CHAPTER STYLING
+===================================================== -->
+
+<style>
+
+.cyber-chapter {
+    max-width: 1150px;
+    margin: 30px auto;
+    padding: 20px;
+    color: #e2e8f0;
+}
+
+.chapter-header {
+    padding: 40px 30px;
+    border: 1px solid #155e75;
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at top right, #164e63, transparent 40%),
+        linear-gradient(135deg, #061526, #11102e);
+    margin-bottom: 25px;
+}
+
+.chapter-brand {
+    color: #22d3ee;
+    font-weight: bold;
+    letter-spacing: 3px;
+    font-size: 13px;
+}
+
+.chapter-number {
+    display: inline-block;
+    color: #67e8f9;
+    border: 1px solid #0891b2;
+    padding: 7px 13px;
+    border-radius: 20px;
+    margin-top: 25px;
+    font-size: 12px;
+}
+
+.chapter-header h1 {
+    color: #67e8f9;
+    font-size: clamp(28px, 5vw, 43px);
+    margin: 18px 0;
+}
+
+.chapter-subtitle {
+    max-width: 750px;
+    line-height: 1.8;
+    color: #cbd5e1;
+}
+
+.chapter-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.chapter-meta span {
+    background: #172554;
+    border: 1px solid #155e75;
+    color: #a5f3fc;
+    padding: 8px 13px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.chapter-section {
+    background: #0b1220;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 22px;
+    overflow-wrap: anywhere;
+}
+
+.chapter-section h2 {
+    color: #22d3ee;
+    font-size: 24px;
+    margin: 10px 0 20px;
+    line-height: 1.4;
+}
+
+.chapter-section h3 {
+    color: #67e8f9;
+    margin-top: 20px;
+}
+
+.chapter-section h4 {
+    color: #38bdf8;
+    margin-top: 20px;
+}
+
+.chapter-section p,
+.chapter-section li {
+    color: #cbd5e1;
+    line-height: 1.85;
+}
+
+.chapter-section li {
+    margin-bottom: 7px;
+}
+
+.chapter-section strong {
+    color: #67e8f9;
+}
+
+.cia-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 18px;
+    margin-top: 25px;
+}
+
+.cia-card,
+.threat-card,
+.failure-card,
+.exercise-card {
+    background: #101c2e;
+    border: 1px solid #263c53;
+    border-radius: 13px;
+    padding: 20px;
+    margin: 18px 0;
+}
+
+.cia-card {
+    border-top: 3px solid #06b6d4;
+}
+
+.cia-icon {
+    font-size: 30px;
+}
+
+.cia-card h3 {
+    font-size: 22px;
+    color: #67e8f9;
+}
+
+.threat-card {
+    border-left: 3px solid #0891b2;
+}
+
+.failure-card {
+    border-left: 3px solid #8b5cf6;
+}
+
+.example-box {
+    background: #10283a;
+    border: 1px solid #155e75;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 18px 0;
+}
+
+.case-study {
+    background: #172033;
+    border: 1px solid #854d0e;
+    border-radius: 13px;
+    padding: 22px;
+    margin: 22px 0;
+}
+
+.case-label {
+    display: inline-block;
+    color: #facc15;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+.summary-table-wrapper {
+    overflow-x: auto;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 400px;
+}
+
+.summary-table th,
+.summary-table td {
+    border: 1px solid #334155;
+    padding: 14px;
+    text-align: left;
+    vertical-align: top;
+    line-height: 1.7;
+}
+
+.summary-table th {
+    color: #67e8f9;
+    background: #172554;
+}
+
+.summary-table td {
+    color: #cbd5e1;
+}
+
+.quiz-question {
+    background: #101c2e;
+    border: 1px solid #263c53;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 18px 0;
+}
+
+.quiz-question h3 {
+    color: #22d3ee;
+}
+
+.quiz-question label {
+    display: block;
+    color: #cbd5e1;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.quiz-question label:hover {
+    background: #172554;
+    border-color: #0891b2;
+}
+
+.quiz-question input {
+    margin-right: 10px;
+    accent-color: #06b6d4;
+}
+
+.quiz-explanation {
+    color: #a5f3fc !important;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+#cyberChapterQuiz button,
+.chapter-top-button {
+    display: inline-block;
+    padding: 13px 18px;
+    margin: 8px 5px 8px 0;
+    border: 0;
+    border-radius: 8px;
+    background: #0891b2;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+#cyberChapterQuiz button:hover,
+.chapter-top-button:hover {
+    background: #0e7490;
+}
+
+#cyberChapterResult {
+    padding: 18px;
+    margin-top: 20px;
+    border-radius: 10px;
+    background: #101c2e;
+    color: #67e8f9;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.next-chapter {
+    border: 1px solid #155e75;
+    background: linear-gradient(135deg, #0b1220, #11102e);
+}
+
+.chapter-footer {
+    text-align: center;
+    padding: 35px 20px;
+    background: #071526;
+    border: 1px solid #164e63;
+    border-radius: 15px;
+}
+
+.chapter-footer h2 {
+    color: #22d3ee;
+}
+
+.chapter-footer p {
+    color: #cbd5e1;
+    line-height: 1.8;
+}
+
+@media(max-width: 600px) {
+
+    .cyber-chapter {
+        padding: 8px;
+    }
+
+    .chapter-header {
+        padding: 25px 18px;
+    }
+
+    .chapter-section {
+        padding: 17px;
+    }
+
+    .chapter-section h2 {
+        font-size: 21px;
+    }
+
+    .cia-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chapter-meta {
+        gap: 7px;
+    }
+
+}
+
+</style>
+
+
+<!-- =====================================================
+ CHAPTER KNOWLEDGE TEST JAVASCRIPT
+===================================================== -->
+
+<script>
+
+function submitCyberChapterQuiz() {
+
+    const answers = {
+        q1: "a",
+        q2: "b",
+        q3: "a",
+        q4: "a",
+        q5: "b",
+        q6: "a",
+        q7: "b",
+        q8: "c",
+        q9: "a",
+        q10: "a"
+    };
+
+    const explanations = {
+
+        q1: "The CIA Triad consists of Confidentiality, Integrity, and Availability.",
+
+        q2: "Confidentiality ensures that only authorized parties can read information.",
+
+        q3: "Integrity protects information against unauthorized modification.",
+
+        q4: "Cybercriminals commonly seek financial gain.",
+
+        q5: "APT means Advanced Persistent Threat.",
+
+        q6: "Hacktivists act for political, social, or ideological causes.",
+
+        q7: "Social engineering manipulates people into revealing information or performing unsafe actions.",
+
+        q8: "Defense in Depth uses multiple layers of security controls.",
+
+        q9: "A negligent insider creates security risks through careless or mistaken actions.",
+
+        q10: "Attack techniques, systems, and threats change over time. Security requires continuous improvement."
+
+    };
+
+    let score = 0;
+    let unanswered = 0;
+
+    for (const question in answers) {
+
+        const selected = document.querySelector(
+            'input[name="' + question + '"]:checked'
+        );
+
+        const explanation = document.getElementById(
+            "explanation-" + question
+        );
+
+        if (!selected) {
+            unanswered++;
+            explanation.textContent = "";
+            continue;
+        }
+
+        if (selected.value === answers[question]) {
+
+            score++;
+
+            explanation.textContent =
+                "CORRECT. " + explanations[question];
+
+            explanation.style.color = "#4ade80";
+
+        } else {
+
+            explanation.textContent =
+                "INCORRECT. Correct answer: " +
+                answers[question].toUpperCase() +
+                ". " + explanations[question];
+
+            explanation.style.color = "#f87171";
+
+        }
+
+    }
+
+    const result = document.getElementById(
+        "cyberChapterResult"
+    );
+
+    if (unanswered > 0) {
+
+        result.textContent =
+            "Please answer all questions. " +
+            unanswered + " question(s) remain unanswered.";
+
+        return;
+    }
+
+    const percentage = Math.round((score / 10) * 100);
+
+    let performance;
+
+    if (score >= 9) {
+        performance = "EXCELLENT. You have mastered this chapter.";
+    } else if (score >= 7) {
+        performance = "GOOD WORK. Review the explanations to improve.";
+    } else if (score >= 5) {
+        performance = "FAIR. Study the chapter again and retry.";
+    } else {
+        performance = "KEEP LEARNING. Review the chapter before retrying.";
+    }
+
+    result.textContent =
+        "YOUR SCORE: " + score + "/10 (" +
+        percentage + "%). " + performance;
+
+}
+
+function resetCyberChapterQuiz() {
+
+    document.getElementById("cyberChapterQuiz").reset();
+
+    document.getElementById(
+        "cyberChapterResult"
+    ).textContent = "";
+
+    document.querySelectorAll(
+        ".quiz-explanation"
+    ).forEach(function(element) {
+
+        element.textContent = "";
+
+    });
+
+}
+
+</script>
+
+<!-- =====================================================
+ END OF CYBERSECURITY CHAPTER 1
+===================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
