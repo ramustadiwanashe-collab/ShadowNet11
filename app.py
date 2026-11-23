@@ -7,6 +7,7 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.routing import BuildError
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -52,6 +53,80 @@ CYBER_CHALLENGES = [
     {"id":"access-01","title":"Least Privilege","level":"Beginner","question":"What security principle gives each user only the permissions required for their tasks?","answer":"least privilege","hint":"The answer contains the word privilege."}
 ]
 
+
+# ==================== MODELS ====================
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(40), unique=True, nullable=False)
+    email = db.Column(db.String(160), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    last_login = db.Column(db.DateTime)
+
+class Progress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    lesson_key = db.Column(db.String(100), nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    __table_args__ = (db.UniqueConstraint("user_id","lesson_key"),)
+
+class ChallengeResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    challenge_id = db.Column(db.String(80), nullable=False)
+    completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint("user_id","challenge_id"),)
+
+
+# ==================== HELPERS (MUST BE BEFORE create_app) ====================
+def current_user():
+    return db.session.get(User, session.get("user_id"))
+
+def login_required(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        if not session.get("user_id"):
+            flash("Sign in to access your learning dashboard.", "error")
+            return redirect(url_for("login"))
+        if not current_user():
+            session.clear()
+            return redirect(url_for("login"))
+        return fn(*args, **kwargs)
+    return wrapped
+
+def simulate_command(raw):
+    """Safe educational simulator. It never invokes an operating-system shell."""
+    if not raw.strip():
+        return "Type 'help' to see available simulated commands."
+    try:
+        args = shlex.split(raw)
+    except ValueError:
+        return "Syntax error. Check your quotation marks."
+    if not args:
+        return ""
+    cmd = args[0]
+    catalog = {
+        "help": "Available commands: help, pwd, whoami, date, uname, ls, clear, ip, ping, echo, history\nThis is a simulated training terminal. Commands do not run on a real server.",
+        "pwd": "/home/student",
+        "whoami": "student",
+        "date": datetime.now(timezone.utc).strftime("%a %b %d %H:%M:%S UTC %Y"),
+        "uname": "ShadowNet-Lab Linux 6.x x86_64 (simulated)",
+        "ls": "Desktop  Documents  Downloads  labs  projects",
+        "clear": "",
+        "ip": "Usage: ip addr\neth0: 192.0.2.10/24 (documentation-only training address)",
+        "ping": "Simulated ping: 4 packets transmitted, 4 received, 0% packet loss. Training output only.",
+        "history": "1  help\n2  pwd\n3  whoami"
+    }
+    if cmd == "echo":
+        return " ".join(args[1:])
+    if cmd in catalog:
+        if cmd == "uname" and len(args) > 1 and args[1] == "-a":
+            return catalog[cmd]
+        return catalog[cmd]
+    return f"{cmd}: command not found in this training simulator. Type 'help'."
+
+
+# ==================== APP FACTORY ====================
 def create_app():
     app = Flask(__name__)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
@@ -65,14 +140,28 @@ def create_app():
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE", "0") == "1"
     app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024
+
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
 
     @app.context_processor
     def inject_globals():
-        return {"site_name":"ShadowNet", "site_version":"9.0", "current_year":datetime.now().year, "csrf_token":generate_csrf}
+        return {
+            "site_name": "ShadowNet",
+            "site_version": "9.0",
+            "current_year": datetime.now().year,
+            "csrf_token": generate_csrf,
+        }
 
+    # -------- BuildError handler (prints the real culprit) --------
+    @app.errorhandler(BuildError)
+    def handle_build_error(e):
+        import traceback
+        traceback.print_exc()
+        return f"URL build error: {e}", 500
+
+    # ---------------- ROUTES ----------------
     @app.route("/")
     def index():
         if session.get("user_id"):
@@ -102,7 +191,7 @@ def create_app():
         if request.method == "POST":
             identity = request.form.get("identity","").strip().lower()
             password = request.form.get("password","")
-            user = User.query.filter(db.or_(db.func.lower(User.username)==identity, User.email==identity)).first()
+            user = User.query.filter(db.or_(db.func.lower(User.username) == identity, User.email == identity)).first()
             if user and check_password_hash(user.password_hash, password):
                 session.clear(); session["user_id"] = user.id
                 user.last_login = datetime.now(timezone.utc); db.session.commit()
@@ -110,7 +199,7 @@ def create_app():
             flash("Invalid username/email or password.", "error")
         return render_template("auth.html", mode="login")
 
-    @app.route("/logout")
+    @app.route("/logout", methods=["GET", "POST"])
     def logout():
         session.clear()
         return redirect(url_for("index"))
@@ -163,7 +252,7 @@ def create_app():
     def terminal_execute():
         command = request.json.get("command","") if request.is_json else request.form.get("command","")
         output = simulate_command(command)
-        return jsonify({"output":output})
+        return jsonify({"output": output})
 
     @app.route("/networking")
     @login_required
@@ -180,14 +269,19 @@ def create_app():
             if network.version != 4:
                 raise ValueError("Enter an IPv4 network in CIDR format.")
             hosts = list(network.hosts()) if network.num_addresses <= 65536 else None
-            return jsonify({"ok":True,"network":str(network.network_address),"broadcast":str(network.broadcast_address),
-                "mask":str(network.netmask),"prefix":network.prefixlen,
-                "total_addresses":network.num_addresses,
-                "usable_hosts":max(network.num_addresses-2,0) if network.prefixlen <= 30 else (1 if network.prefixlen == 31 else 1),
-                "first_host":str(hosts[0]) if hosts else (str(network.network_address+1) if network.prefixlen <= 30 else str(network.network_address)),
-                "last_host":str(hosts[-1]) if hosts else (str(network.broadcast_address-1) if network.prefixlen <= 30 else str(network.broadcast_address))})
+            return jsonify({
+                "ok": True,
+                "network": str(network.network_address),
+                "broadcast": str(network.broadcast_address),
+                "mask": str(network.netmask),
+                "prefix": network.prefixlen,
+                "total_addresses": network.num_addresses,
+                "usable_hosts": max(network.num_addresses - 2, 0) if network.prefixlen <= 30 else (1 if network.prefixlen == 31 else 1),
+                "first_host": str(hosts[0]) if hosts else (str(network.network_address + 1) if network.prefixlen <= 30 else str(network.network_address)),
+                "last_host": str(hosts[-1]) if hosts else (str(network.broadcast_address - 1) if network.prefixlen <= 30 else str(network.broadcast_address)),
+            })
         except ValueError as exc:
-            return jsonify({"ok":False,"error":str(exc) or "Invalid network."}), 400
+            return jsonify({"ok": False, "error": str(exc) or "Invalid network."}), 400
 
     @app.route("/cybersecurity")
     @login_required
@@ -202,14 +296,14 @@ def create_app():
         answer = (data.get("answer") or "").strip().lower()
         challenge = next((c for c in CYBER_CHALLENGES if c["id"] == challenge_id), None)
         if not challenge:
-            return jsonify({"ok":False,"message":"Challenge not found."}), 404
+            return jsonify({"ok": False, "message": "Challenge not found."}), 404
         correct = answer == challenge["answer"]
         if correct:
             existing = ChallengeResult.query.filter_by(user_id=session["user_id"], challenge_id=challenge_id).first()
             if not existing:
                 db.session.add(ChallengeResult(user_id=session["user_id"], challenge_id=challenge_id))
                 db.session.commit()
-        return jsonify({"ok":correct,"message":"Correct. Challenge completed." if correct else "Not quite. Review the hint and try again."})
+        return jsonify({"ok": correct, "message": "Correct. Challenge completed." if correct else "Not quite. Review the hint and try again."})
 
     @app.route("/profile")
     @login_required
@@ -237,73 +331,6 @@ def create_app():
         db.create_all()
     return app
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(40), unique=True, nullable=False)
-    email = db.Column(db.String(160), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    last_login = db.Column(db.DateTime)
-
-class Progress(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
-    lesson_key = db.Column(db.String(100), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    __table_args__ = (db.UniqueConstraint("user_id","lesson_key"),)
-
-class ChallengeResult(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
-    challenge_id = db.Column(db.String(80), nullable=False)
-    completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    __table_args__ = (db.UniqueConstraint("user_id","challenge_id"),)
-
-def current_user():
-    return db.session.get(User, session.get("user_id"))
-
-def login_required(fn):
-    @wraps(fn)
-    def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
-            flash("Sign in to access your learning dashboard.", "error")
-            return redirect(url_for("login"))
-        if not current_user():
-            session.clear()
-            return redirect(url_for("login"))
-        return fn(*args, **kwargs)
-    return wrapped
-
-def simulate_command(raw):
-    """Safe educational simulator. It never invokes an operating-system shell."""
-    if not raw.strip():
-        return "Type 'help' to see available simulated commands."
-    try:
-        args = shlex.split(raw)
-    except ValueError:
-        return "Syntax error. Check your quotation marks."
-    if not args:
-        return ""
-    cmd = args[0]
-    catalog = {
-        "help": "Available commands: help, pwd, whoami, date, uname, ls, clear, ip, ping, echo, history\nThis is a simulated training terminal. Commands do not run on a real server.",
-        "pwd": "/home/student",
-        "whoami": "student",
-        "date": datetime.now(timezone.utc).strftime("%a %b %d %H:%M:%S UTC %Y"),
-        "uname": "ShadowNet-Lab Linux 6.x x86_64 (simulated)",
-        "ls": "Desktop  Documents  Downloads  labs  projects",
-        "clear": "",
-        "ip": "Usage: ip addr\neth0: 192.0.2.10/24 (documentation-only training address)",
-        "ping": "Simulated ping: 4 packets transmitted, 4 received, 0% packet loss. Training output only.",
-        "history": "1  help\n2  pwd\n3  whoami"
-    }
-    if cmd == "echo":
-        return " ".join(args[1:])
-    if cmd in catalog:
-        if cmd == "uname" and len(args) > 1 and args[1] == "-a":
-            return catalog[cmd]
-        return catalog[cmd]
-    return f"{cmd}: command not found in this training simulator. Type 'help'."
 
 app = create_app()
 
