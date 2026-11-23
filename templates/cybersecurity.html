@@ -2453,3 +2453,542 @@ Identify the purpose of each port:
 </div>
 </body>
 </html>
+
+<!-- CHAPTER 4: CRYPTOGRAPHY AND PKI -->
+<section class="chapter">
+
+<h2>Chapter 4: Cryptography and PKI</h2>
+
+<p>
+Chapter 3 taught you how operating systems work. This chapter teaches you how to protect data on those systems and in transit between them. Cryptography is the mathematical foundation of every security control you will ever deploy. When you visit an HTTPS website, when your password is verified, when a software update is validated, when a VPN tunnel is established, cryptography is doing the work. This chapter explains how it actually functions, not as abstract mathematics, but as the practical toolset that makes digital trust possible.
+</p>
+
+<hr>
+
+<h3>4.1 Why Cryptography Matters</h3>
+
+<p>
+Every security problem you face involves one of three questions: Is this data secret? Has this data been altered? Is this person who they claim to be? Cryptography provides the mechanisms to answer all three.
+</p>
+
+<p>
+Confidentiality is achieved through encryption. Integrity is achieved through hashing. Authentication and non-repudiation are achieved through digital signatures and certificates. Without cryptography, the internet as we know it would be impossible. Online banking, e-commerce, secure messaging, and remote work all depend on it.
+</p>
+
+<p>
+The goal of this chapter is not to make you a cryptographer. The goal is to make you a competent consumer and defender of cryptographic systems. You need to know which algorithm to use for which purpose, why some algorithms are broken, and how attackers exploit implementation mistakes rather than breaking the math itself.
+</p>
+
+<hr>
+
+<h3>4.2 Symmetric Encryption: One Key for Everything</h3>
+
+<h4>4.2.1 How Symmetric Encryption Works</h4>
+
+<p>
+Symmetric encryption uses the same key for both encryption and decryption. If Alice wants to send a message to Bob, they must both possess the same secret key. Alice encrypts the plaintext with the key to produce ciphertext. Bob decrypts the ciphertext with the same key to recover the plaintext.
+</p>
+
+<p>
+This is the oldest form of cryptography, and it remains the workhorse of modern encryption. Symmetric algorithms are fast and efficient, making them suitable for encrypting large volumes of data, including files, disk drives, and network traffic.
+</p>
+
+<h4>4.2.2 Common Symmetric Algorithms</h4>
+
+<p><strong>AES (Advanced Encryption Standard)</strong></p>
+<p>
+AES is the current standard. It operates on fixed-size blocks of data (128 bits) with key sizes of 128, 192, or 256 bits. AES-256 is considered secure against brute-force attacks for the foreseeable future.
+</p>
+
+<p><strong>ChaCha20</strong></p>
+<p>
+ChaCha20 is a stream cipher often used in mobile and low-power environments. It is fast in software and resistant to timing attacks, making it a good alternative to AES in certain contexts.
+</p>
+
+<p><strong>3DES (Triple DES)</strong></p>
+<p>
+3DES is deprecated. It was designed to extend the life of the aging DES algorithm, but its 64-bit block size makes it vulnerable to birthday attacks (Sweet32). Do not use 3DES for new systems.
+</p>
+
+<p><strong>DES</strong></p>
+<p>
+DES is completely broken. Its 56-bit key can be brute-forced in hours. It should never be used.
+</p>
+
+<h4>4.2.3 The Key Distribution Problem</h4>
+
+<p>
+Symmetric encryption has one fundamental weakness: key distribution. If Alice and Bob want to communicate securely, they must first share a secret key through some secure channel. If they are in different cities and have never met, how do they exchange the key without an eavesdropper intercepting it?
+</p>
+
+<p>
+This is the problem that asymmetric cryptography was invented to solve. In practice, modern systems use hybrid encryption: asymmetric cryptography is used to securely exchange a symmetric session key, and then symmetric encryption is used for the actual data. This is exactly how HTTPS works.
+</p>
+
+<h4>4.2.4 Block Cipher Modes and Their Pitfalls</h4>
+
+<p>
+AES is a block cipher. It encrypts fixed-size blocks. To encrypt data larger than one block, a mode of operation is needed. The mode matters enormously for security.
+</p>
+
+<p><strong>ECB (Electronic Codebook)</strong></p>
+<p>
+ECB encrypts each block independently. Identical plaintext blocks produce identical ciphertext blocks. This leaks patterns and is never appropriate for anything sensitive. The classic demonstration is encrypting an image in ECB mode and seeing the outline of the original image in the ciphertext.
+</p>
+
+<p><strong>CBC (Cipher Block Chaining)</strong></p>
+<p>
+CBC XORs each plaintext block with the previous ciphertext block before encryption. This hides patterns, but it is vulnerable to padding oracle attacks (like POODLE) if error messages distinguish between padding errors and other errors.
+</p>
+
+<p><strong>CTR (Counter Mode)</strong></p>
+<p>
+CTR turns a block cipher into a stream cipher by encrypting a counter value and XORing the result with the plaintext. It is fast and parallelizable, but malleable. An attacker can flip bits in the ciphertext to flip corresponding bits in the plaintext without knowing the key.
+</p>
+
+<p><strong>GCM (Galois/Counter Mode)</strong></p>
+<p>
+GCM combines CTR-mode encryption with authentication. It provides both confidentiality and integrity (authenticated encryption). If the ciphertext is modified, decryption fails. This is the recommended mode for AES in modern systems.
+</p>
+
+<div class="tip">
+<strong>The defender's rule:</strong>
+Use AES-GCM or ChaCha20-Poly1305 for authenticated encryption. Avoid ECB entirely. Treat any system using CBC without additional integrity protection as suspicious.
+</div>
+
+<hr>
+
+<h3>4.3 Asymmetric Encryption: Two Keys, Infinite Possibilities</h3>
+
+<h4>4.3.1 How Asymmetric Encryption Works</h4>
+
+<p>
+Asymmetric encryption (also called public-key cryptography) uses a key pair: a public key that can be shared with anyone, and a private key that is kept secret. The mathematical relationship between the keys is such that a message encrypted with one key can only be decrypted with the other.
+</p>
+
+<p>
+If Bob wants to send an encrypted message to Alice, he retrieves Alice's public key (which she publishes freely) and uses it to encrypt the message. Only Alice's private key can decrypt it. Since Alice is the only person who possesses her private key, she is the only one who can read the message.
+</p>
+
+<p>
+The reverse operation is used for digital signatures: Alice signs a hash of a message with her private key. Anyone with her public key can verify that it was created by someone possessing Alice's private key, and therefore by Alice.
+</p>
+
+<h4>4.3.2 Common Asymmetric Algorithms</h4>
+
+<p><strong>RSA</strong></p>
+<p>
+RSA is the most widely known asymmetric algorithm, invented in 1977. Its security is based on the difficulty of factoring the product of two large prime numbers. RSA keys must be at least 2048 bits, and 3072 bits or larger is recommended for long-term security.
+</p>
+
+<p><strong>Elliptic Curve Cryptography (ECC)</strong></p>
+<p>
+ECC provides equivalent security to RSA with much shorter keys. A 256-bit ECC key provides roughly the same security as a 3072-bit RSA key. This makes ECC more efficient for mobile devices and constrained environments. ECDSA (Elliptic Curve Digital Signature Algorithm) is commonly used for digital signatures.
+</p>
+
+<p><strong>Diffie-Hellman</strong></p>
+<p>
+Diffie-Hellman is a key exchange algorithm, not an encryption algorithm. It allows two parties to establish a shared secret over an insecure channel without ever transmitting the secret itself. This shared secret is then used as a symmetric key. Diffie-Hellman is fundamental to TLS and VPN protocols.
+</p>
+
+<h4>4.3.3 Key Sizes and Security Levels</h4>
+
+<p>
+The security of asymmetric cryptography depends on key size, but the relationship is not linear across algorithms. The following table provides rough equivalences:
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Symmetric Key Size</th>
+<th>RSA Key Size</th>
+<th>ECC Key Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>128 bits (AES-128)</td>
+<td>3072 bits</td>
+<td>256 bits</td>
+</tr>
+<tr>
+<td>192 bits (AES-192)</td>
+<td>7680 bits</td>
+<td>384 bits</td>
+</tr>
+<tr>
+<td>256 bits (AES-256)</td>
+<td>15360 bits</td>
+<td>521 bits</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+For most purposes, AES-256 and RSA-3072 (or ECC-256) are sufficient. The concern is not that these will be broken by classical computers, but that quantum computers may eventually break RSA and ECC entirely. This is why post-quantum cryptography is an active area of research and standardization.
+</p>
+
+<hr>
+
+<h3>4.4 Hashing: One-Way Fingerprints</h3>
+
+<h4>4.4.1 What a Hash Function Is</h4>
+
+<p>
+A hash function takes an input of any size and produces an output of fixed size (e.g., 256 bits for SHA-256). The same input always produces the same output. Crucially, hash functions are one-way: given the hash, it is computationally infeasible to recover the original input.
+</p>
+
+<p>
+Hashing is not encryption. There is no key, and there is no decryption. Hashing is used for integrity verification, password storage, and digital signatures, not for confidentiality.
+</p>
+
+<h4>4.4.2 Properties of a Secure Hash Function</h4>
+
+<p>A cryptographic hash function must have three properties:</p>
+
+<ul>
+<li>
+<strong>Preimage resistance:</strong>
+Given a hash value, it is infeasible to find any input that produces that hash. This is what makes password hashing work. An attacker who steals a password hash cannot reverse it to find the password.
+</li>
+
+<li>
+<strong>Second preimage resistance:</strong>
+Given an input and its hash, it is infeasible to find a different input with the same hash.
+</li>
+
+<li>
+<strong>Collision resistance:</strong>
+It is infeasible to find two different inputs that produce the same hash. Collisions are the death of a hash function. MD5 and SHA-1 are both broken because collisions have been demonstrated.
+</li>
+</ul>
+
+<h4>4.4.3 Common Hash Algorithms</h4>
+
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Output Size</th>
+<th>Status</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MD5</td>
+<td>128 bits</td>
+<td>Broken, collisions found</td>
+<td>Never use for security</td>
+</tr>
+<tr>
+<td>SHA-1</td>
+<td>160 bits</td>
+<td>Broken, collisions found</td>
+<td>Deprecated</td>
+</tr>
+<tr>
+<td>SHA-256</td>
+<td>256 bits</td>
+<td>Secure</td>
+<td>Integrity, signatures, certificates</td>
+</tr>
+<tr>
+<td>SHA-3</td>
+<td>Variable</td>
+<td>Secure</td>
+<td>Alternative to SHA-2</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>The defender's rule:</strong>
+Use SHA-256 or SHA-3. MD5 and SHA-1 are for checksums and legacy compatibility only, never for security decisions.
+</div>
+
+<h4>4.4.4 Password Hashing: A Special Case</h4>
+
+<p>
+Passwords require a different approach than file integrity hashing. A fast hash like SHA-256 is terrible for password storage because an attacker with a stolen hash database can try billions of guesses per second on a GPU.
+</p>
+
+<p>Password hashing functions are deliberately slow and memory-intensive:</p>
+
+<ul>
+<li><strong>bcrypt:</strong> Slow and somewhat memory-hard.</li>
+<li><strong>scrypt:</strong> Memory-hard, requiring large amounts of RAM per hash.</li>
+<li><strong>Argon2:</strong> Specifically Argon2id is the current best practice, winner of the 2015 Password Hashing Competition. It is memory-hard and resistant to GPU and ASIC acceleration.</li>
+</ul>
+
+<h4>Salting</h4>
+<p>
+A unique random value (salt) is added to each password before hashing. This ensures identical passwords produce different hashes and defeats precomputed rainbow tables. The salt is stored alongside the hash. It does not need to be secret.
+</p>
+
+<h4>Peppering</h4>
+<p>
+A secret value is added to the password before hashing, stored separately from the database (e.g., in application configuration). This provides an additional layer of defense if the database is breached but the application server is not.
+</p>
+
+<hr>
+
+<h3>4.5 Digital Signatures: Proving Who Sent What</h3>
+
+<h4>4.5.1 How Digital Signatures Work</h4>
+
+<p>
+A digital signature provides three guarantees: origin authentication (the message came from the claimed sender), integrity (the message was not altered), and non-repudiation (the sender cannot deny having signed it).
+</p>
+
+<p>The process works as follows:</p>
+
+<ol>
+<li>The signer computes a hash of the message.</li>
+<li>The signer signs the hash using their private key. This produces the digital signature.</li>
+<li>The signer sends the message and the signature together.</li>
+<li>The recipient computes their own hash of the message.</li>
+<li>The recipient verifies the signature using the signer's public key.</li>
+<li>If the signature verification succeeds, the signature is valid.</li>
+</ol>
+
+<h4>4.5.2 Why Signatures Matter</h4>
+
+<p>
+Digital signatures are used everywhere: software updates (to prevent malicious code injection), code signing certificates (to verify publisher identity), email (S/MIME and PGP), document signing (PDFs, contracts), and TLS certificates (to prove server identity).
+</p>
+
+<p>
+The critical dependency: A digital signature is only as trustworthy as the public key used to verify it. If an attacker can substitute their own public key for the legitimate one, they can forge signatures that appear valid. This is why certificates and Public Key Infrastructure exist.
+</p>
+
+<hr>
+
+<h3>4.6 Public Key Infrastructure (PKI)</h3>
+
+<h4>4.6.1 The Problem PKI Solves</h4>
+
+<p>
+Asymmetric cryptography has a bootstrap problem: how do you know that a public key actually belongs to the person or organization it claims to represent? An attacker could publish a public key claiming to be "yourbank.com" and intercept all traffic encrypted to that key.
+</p>
+
+<p>
+PKI solves this through certificates issued by trusted Certificate Authorities (CAs). A certificate is a digital document that binds an identity (a domain name, an organization, a person) to a public key, and it is signed by the CA's private key.
+</p>
+
+<h4>4.6.2 The X.509 Certificate</h4>
+
+<p>The standard format for certificates is X.509. A certificate contains:</p>
+
+<ul>
+<li>The subject's identity (e.g., www.example.com).</li>
+<li>The subject's public key.</li>
+<li>The issuer's identity (the CA).</li>
+<li>Validity period (not before / not after).</li>
+<li>The CA's digital signature.</li>
+</ul>
+
+<p>When your browser connects to an HTTPS site, the server presents its certificate. The browser checks:</p>
+
+<ol>
+<li>Is the certificate signed by a CA in my trusted root store?</li>
+<li>Is the certificate within its validity period?</li>
+<li>Does the domain name in the certificate match the domain I am connecting to?</li>
+<li>Has the certificate been revoked?</li>
+</ol>
+
+<p>If all checks pass, the browser establishes an encrypted connection.</p>
+
+<h4>4.6.3 The Chain of Trust</h4>
+
+<p>
+Certificates form a chain: a root CA certificate is self-signed and pre-installed in browsers and operating systems. The root CA signs an intermediate CA certificate. The intermediate CA signs the end-entity certificate presented by the website.
+</p>
+
+<p>
+This chain allows root CAs to keep their private keys offline (in hardware security modules) while still issuing certificates at scale through intermediates. If an intermediate is compromised, it can be revoked without revoking the root.
+</p>
+
+<h4>4.6.4 Certificate Revocation</h4>
+
+<p>
+Certificates can be revoked before their expiration date, for example, if a private key is compromised or a domain changes ownership. Two mechanisms exist:
+</p>
+
+<p><strong>CRL (Certificate Revocation List)</strong></p>
+<p>
+A signed list of revoked certificate serial numbers, published periodically by the CA. CRLs can be large and are not always fresh.
+</p>
+
+<p><strong>OCSP (Online Certificate Status Protocol)</strong></p>
+<p>
+The client queries the CA in real time to check whether a specific certificate is revoked. OCSP is faster and more current but introduces a privacy issue (the CA learns which sites you visit) and a performance dependency.
+</p>
+
+<h4>4.6.5 PKI Attack Surface</h4>
+
+<p>
+PKI is a high-value target. CA compromise allows an attacker to issue valid certificates for any domain, enabling man-in-the-middle attacks. This has happened: DigiNotar in 2011, Comodo in 2011, and Symantec's CA business was ultimately distrusted by browsers after repeated misissuance.
+</p>
+
+<p>
+Certificate pinning mitigates this risk by hardcoding the expected certificate or public key in the application. Even if a rogue CA issues a certificate for a domain, the pinned application will reject it because the certificate does not match the expected value.
+</p>
+
+<hr>
+
+<h3>4.7 TLS: Bringing It All Together</h3>
+
+<h4>4.7.1 What TLS Does</h4>
+
+<p>
+TLS (Transport Layer Security) is the protocol that secures HTTPS, email, VPNs, and many other protocols. It provides confidentiality (encryption), integrity (MAC or AEAD), and authentication (certificates).
+</p>
+
+<p>
+TLS is a hybrid protocol. It uses asymmetric cryptography during the handshake to authenticate the server and establish a shared secret. It then uses symmetric encryption (AES-GCM or ChaCha20-Poly1305) for the actual data transfer, because symmetric encryption is much faster.
+</p>
+
+<h4>4.7.2 The TLS Handshake (Simplified)</h4>
+
+<ol>
+<li><strong>Client Hello:</strong> The client sends supported TLS versions, cipher suites, and a random value.</li>
+<li><strong>Server Hello:</strong> The server selects a TLS version and cipher suite, and sends its own random value.</li>
+<li><strong>Certificate:</strong> The server sends its certificate chain.</li>
+<li><strong>Key Exchange:</strong> The client and server perform a Diffie-Hellman key exchange (or RSA key transport in older versions) to establish a shared secret.</li>
+<li><strong>Finished:</strong> Both sides verify that the handshake was not tampered with, using the shared secret.</li>
+</ol>
+
+<p>
+After the handshake, all application data is encrypted with the negotiated symmetric cipher.
+</p>
+
+<h4>4.7.3 TLS Attacks and Weaknesses</h4>
+
+<p>
+<strong>Downgrade attacks (POODLE, DROWN):</strong>
+These force the connection to use older, weaker protocols (SSL 3.0, SSL 2.0) that have known vulnerabilities. Modern browsers and servers disable SSL and TLS 1.0/1.1 entirely.
+</p>
+
+<p>
+<strong>BEAST:</strong>
+Exploited CBC mode in TLS 1.0.
+</p>
+
+<p>
+<strong>Lucky Thirteen:</strong>
+Exploited timing differences in CBC padding checks.
+</p>
+
+<p>
+<strong>Sweet32:</strong>
+Exploited 64-bit block ciphers (3DES).
+</p>
+
+<p>
+<strong>Certificate validation failures:</strong>
+These are among the most common TLS vulnerabilities in applications. An app that accepts self-signed certificates, ignores hostname mismatches, or disables revocation checking is vulnerable to man-in-the-middle attacks even though the underlying TLS is "working."
+</p>
+
+<div class="tip">
+<strong>The defender's rule:</strong>
+Configure TLS 1.2 or 1.3 only. Disable CBC-mode ciphers where possible. Use strong cipher suites. Never disable certificate validation in production code.
+</div>
+
+<hr>
+
+<h3>Chapter 4 Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Symmetric Encryption</strong></td>
+<td>One key for encrypt and decrypt. Fast. AES-GCM is the standard. Key distribution is the challenge.</td>
+</tr>
+<tr>
+<td><strong>Asymmetric Encryption</strong></td>
+<td>Public/private key pair. Solves key distribution. RSA and ECC are the standards. Used for key exchange and signatures.</td>
+</tr>
+<tr>
+<td><strong>Hashing</strong></td>
+<td>One-way fingerprint. SHA-256 for integrity. Argon2/bcrypt for passwords. MD5 and SHA-1 are broken.</td>
+</tr>
+<tr>
+<td><strong>Digital Signatures</strong></td>
+<td>Hash plus private key. Provides authentication, integrity, non-repudiation. Depends on trustworthy public keys.</td>
+</tr>
+<tr>
+<td><strong>PKI</strong></td>
+<td>Certificates bind identity to public key. Chain of trust from root CA to end entity. Revocation via CRL/OCSP.</td>
+</tr>
+<tr>
+<td><strong>TLS</strong></td>
+<td>Hybrid protocol: asymmetric handshake, symmetric data. TLS 1.2/1.3 only. Certificate validation is critical.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Next Chapter Preview</h3>
+
+<p>
+Chapter 5 moves into Identity and Access Management (IAM). You will learn how systems decide who you are (authentication) and what you are allowed to do (authorization). This is where cryptography meets the human element: passwords, MFA, single sign-on, and the access control models that determine whether an attacker who steals one credential can reach everything or nothing.
+</p>
+
+<div class="exercise">
+
+<h3>Chapter 4 Exercises</h3>
+<p><strong>Estimated time: 6–8 hours</strong></p>
+
+<h4>Exercise 1: Symmetric vs. Asymmetric Comparison</h4>
+<p>
+Write a one-page comparison of symmetric and asymmetric encryption. Include:
+</p>
+<ul>
+<li>Key distribution.</li>
+<li>Speed.</li>
+<li>Use cases.</li>
+<li>Why hybrid encryption is used in TLS.</li>
+</ul>
+
+<h4>Exercise 2: Hash Verification</h4>
+<p>
+Download a file and its SHA-256 checksum from a trusted source (many Linux distributions provide these). Compute the hash locally and verify it matches. Explain what would happen if the file had been tampered with.
+</p>
+
+<h4>Exercise 3: Certificate Inspection</h4>
+<p>
+Open your browser, visit an HTTPS site, and inspect the certificate. Identify:
+</p>
+<ul>
+<li>The issuer.</li>
+<li>The validity period.</li>
+<li>The public key algorithm.</li>
+<li>The signature algorithm.</li>
+</ul>
+<p>Then trace the certificate chain to the root CA.</p>
+
+<h4>Exercise 4: Password Hashing Research</h4>
+<p>
+Look up the OWASP Password Storage Cheat Sheet. Write a summary of the current recommendations for password hashing, including which algorithms to use and which to avoid.
+</p>
+
+<h4>Exercise 5: TLS Configuration Check</h4>
+<p>
+Use the SSL Labs Server Test (ssllabs.com) on a public website. Review the results and identify any weak configurations, including:
+</p>
+<ul>
+<li>Old TLS versions.</li>
+<li>Weak ciphers.</li>
+<li>Certificate issues.</li>
+</ul>
+
+</div>
+
+</section>
+<!-- END CHAPTER 4 -->
