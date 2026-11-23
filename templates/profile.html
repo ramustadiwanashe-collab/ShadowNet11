@@ -1,1 +1,451 @@
-{% extends "base.html" %}{% block title %}Profile{% endblock %}{% block content %}<section class="page-head"><span class="eyebrow">STUDENT PROFILE</span><h1>{{ user.username }}</h1><p>{{ user.email }}</p><p>Member since {{ user.created_at.strftime('%d %B %Y') }}</p></section>{% endblock %}
+
+{% extends "base.html" %}
+
+{% block title %}My Profile | ShadowNet618{% endblock %}
+
+{% block content %}
+
+<style>
+.profile-page {
+    max-width: 1150px;
+    margin: auto;
+    padding: 25px 16px 50px;
+    color: #eaf4ff;
+}
+
+.profile-page * {
+    box-sizing: border-box;
+}
+
+.profile-hero {
+    background: linear-gradient(135deg, #071b2d, #15102d);
+    border: 1px solid #15516d;
+    border-radius: 20px;
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    box-shadow: 0 0 25px #00d9ff12;
+}
+
+.profile-photo {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #00e5ff;
+    background: #102b40;
+}
+
+.profile-identity {
+    flex: 1;
+    min-width: 200px;
+}
+
+.profile-identity h1 {
+    color: #00e5ff;
+    margin: 0 0 8px;
+    font-size: 29px;
+}
+
+.profile-identity p {
+    color: #b5c9dc;
+    margin: 5px 0;
+}
+
+.member-badge {
+    display: inline-block;
+    background: #123b52;
+    border: 1px solid #00cce8;
+    color: #65eaff;
+    border-radius: 20px;
+    padding: 7px 13px;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.profile-section {
+    background: #0b1928;
+    border: 1px solid #1a3b53;
+    border-radius: 16px;
+    padding: 23px;
+    margin-top: 23px;
+}
+
+.profile-section h2 {
+    color: #00e5ff;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 17px;
+}
+
+.profile-field {
+    background: #102438;
+    border: 1px solid #1b415b;
+    border-radius: 11px;
+    padding: 15px;
+    min-width: 0;
+}
+
+.profile-field small {
+    color: #8fa9be;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.profile-field strong {
+    color: #f0f7ff;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 7px;
+    border: 1px solid #28516b;
+    border-radius: 9px;
+    background: #071522;
+    color: white;
+    outline: none;
+}
+
+.profile-input:focus {
+    border-color: #00e5ff;
+}
+
+.profile-label {
+    display: block;
+    color: #a9bfd1;
+    margin-top: 15px;
+    font-size: 13px;
+}
+
+.profile-button {
+    display: inline-block;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 9px;
+    background: #00cce8;
+    color: #03121d;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 18px;
+    text-decoration: none;
+}
+
+.profile-button:hover {
+    background: #65eaff;
+}
+
+.profile-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.profile-links a {
+    background: #102438;
+    color: #00e5ff;
+    border: 1px solid #1b415b;
+    padding: 13px 17px;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.profile-links a:hover {
+    border-color: #00e5ff;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 13px;
+}
+
+.stat-card {
+    background: #102438;
+    border: 1px solid #1b415b;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-card h2 {
+    color: #00e5ff;
+    font-size: 27px;
+    margin: 0;
+}
+
+.stat-card p {
+    color: #a9bfd1;
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+@media(max-width: 600px) {
+    .profile-hero {
+        text-align: center;
+        justify-content: center;
+    }
+
+    .profile-identity {
+        flex-basis: 100%;
+    }
+}
+</style>
+
+<div class="profile-page">
+
+    <!-- MEMBER HEADER -->
+    <section class="profile-hero">
+
+        <img
+            class="profile-photo"
+            src="{{ user.profile_picture or url_for('static', filename='images/default-avatar.png') }}"
+            alt="Member profile picture"
+        >
+
+        <div class="profile-identity">
+
+            <h1>
+                {{ user.first_name or user.username or 'ShadowNet Member' }}
+                {{ user.last_name or '' }}
+            </h1>
+
+            <p>@{{ user.username or 'member' }}</p>
+
+            <p>{{ user.email or 'Email not provided' }}</p>
+
+            <span class="member-badge">
+                {{ user.membership or 'FREE MEMBER' }}
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ACCOUNT STATISTICS -->
+    <section class="profile-section">
+
+        <h2>My Learning Statistics</h2>
+
+        <div class="profile-stats">
+
+            <div class="stat-card">
+                <h2>{{ completed_lessons|default(0) }}</h2>
+                <p>Completed Lessons</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>{{ enrolled_courses|default(0) }}</h2>
+                <p>Enrolled Courses</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>{{ certificates|default(0) }}</h2>
+                <p>Certificates</p>
+            </div>
+
+            <div class="stat-card">
+                <h2>{{ learning_points|default(0) }}</h2>
+                <p>Learning Points</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PERSONAL INFORMATION -->
+    <section class="profile-section">
+
+        <h2>Personal Information</h2>
+
+        <div class="profile-grid">
+
+            <div class="profile-field">
+                <small>First Name</small>
+                <strong>{{ user.first_name or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Last Name</small>
+                <strong>{{ user.last_name or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Username</small>
+                <strong>{{ user.username or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Email Address</small>
+                <strong>{{ user.email or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Date of Birth</small>
+                <strong>{{ user.date_of_birth or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Age</small>
+                <strong>{{ user.age if user.age is not none else 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Gender</small>
+                <strong>{{ user.gender or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Phone Number</small>
+                <strong>{{ user.phone or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Residential Address</small>
+                <strong>{{ user.address or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Country</small>
+                <strong>{{ user.country or 'Not provided' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Date Registered</small>
+                <strong>{{ user.created_at or 'Not available' }}</strong>
+            </div>
+
+            <div class="profile-field">
+                <small>Account Status</small>
+                <strong>{{ user.account_status or 'Active' }}</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- EDIT PROFILE -->
+    <section class="profile-section">
+
+        <h2>Edit My Profile</h2>
+
+        <p style="color:#a9bfd1;font-size:13px;">
+            Update your personal information below.
+        </p>
+
+        <form method="POST"
+              action=""
+              enctype="multipart/form-data">
+
+            <label class="profile-label">Profile Photograph</label>
+            <input class="profile-input"
+                   type="file"
+                   name="profile_picture"
+                   accept="image/png,image/jpeg,image/webp">
+
+            <label class="profile-label">First Name</label>
+            <input class="profile-input"
+                   type="text"
+                   name="first_name"
+                   value="{{ user.first_name or '' }}">
+
+            <label class="profile-label">Last Name</label>
+            <input class="profile-input"
+                   type="text"
+                   name="last_name"
+                   value="{{ user.last_name or '' }}">
+
+            <label class="profile-label">Email Address</label>
+            <input class="profile-input"
+                   type="email"
+                   name="email"
+                   value="{{ user.email or '' }}">
+
+            <label class="profile-label">Date of Birth</label>
+            <input class="profile-input"
+                   type="date"
+                   name="date_of_birth"
+                   value="{{ user.date_of_birth or '' }}">
+
+            <label class="profile-label">Phone Number</label>
+            <input class="profile-input"
+                   type="tel"
+                   name="phone"
+                   value="{{ user.phone or '' }}">
+
+            <label class="profile-label">Gender</label>
+            <select class="profile-input" name="gender">
+                <option value="">Select gender</option>
+                <option value="Male"
+                    {% if user.gender == 'Male' %}selected{% endif %}>
+                    Male
+                </option>
+                <option value="Female"
+                    {% if user.gender == 'Female' %}selected{% endif %}>
+                    Female
+                </option>
+                <option value="Prefer not to say"
+                    {% if user.gender == 'Prefer not to say' %}selected{% endif %}>
+                    Prefer not to say
+                </option>
+            </select>
+
+            <label class="profile-label">Residential Address</label>
+            <textarea class="profile-input"
+                      name="address"
+                      rows="3">{{ user.address or '' }}</textarea>
+
+            <label class="profile-label">Country</label>
+            <input class="profile-input"
+                   type="text"
+                   name="country"
+                   value="{{ user.country or '' }}">
+
+            <button class="profile-button" type="submit">
+                Save Profile Changes
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- ACCOUNT MANAGEMENT -->
+    <section class="profile-section">
+
+        <h2>Account Management</h2>
+
+        <div class="profile-links">
+
+            <a href="{{ url_for('dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('logout') }}">
+                Logout
+            </a>
+
+        </div>
+
+    </section>
+
+    <p style="text-align:center;color:#718ba1;font-size:12px;margin-top:30px;">
+        ShadowNet618 | Member Profile | Version 9.0
+    </p>
+
+</div>
+
+{% endblock %}
