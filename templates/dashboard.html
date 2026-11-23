@@ -1,1 +1,806 @@
-{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block content %}<section class="welcome"><span class="eyebrow">STUDENT CONTROL CENTRE</span><h1>Welcome, {{ user.username }}.</h1><p>Your learning workspace is ready. Choose a department and keep building your skills.</p><div class="stat-grid"><div class="stat-card"><b>{{ courses|length }}</b><span>Learning paths</span></div><div class="stat-card"><b>{{ completed }}</b><span>Lessons completed</span></div><div class="stat-card"><b>Free</b><span>Membership</span></div></div></section><section class="section"><div class="section-head"><h2>Your departments</h2><a href="{{ url_for('academy') }}">View academy ↗</a></div><div class="cards">{% for c in courses %}<article class="card"><span class="tag">{{ c.department }}</span><h3>{{ c.title }}</h3><p>{{ c.description }}</p><a href="{{ url_for('course',slug=c.slug) }}">Open learning path ↗</a></article>{% endfor %}<article class="card feature"><span class="tag">PRACTICAL ENVIRONMENT</span><h3>ShadowTerminal</h3><p>Practise basic Linux commands in a safe simulated terminal.</p><a href="{{ url_for('terminal') }}">Open terminal ↗</a></article><article class="card feature"><span class="tag">NETWORK ENGINEERING</span><h3>Subnet calculator</h3><p>Calculate IPv4 network details and practise CIDR notation.</p><a href="{{ url_for('networking') }}">Open simulator ↗</a></article></div></section>{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShadowNet | Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #05040b;
+            --panel: #100b1c;
+            --panel2: #160d27;
+            --purple: #a020ff;
+            --pink: #e04cff;
+            --blue: #16aaff;
+            --text: #f7f1ff;
+            --muted: #b5a4ca;
+            --border: rgba(166, 70, 255, .35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 75% 5%, #210b3d 0, transparent 30%),
+                radial-gradient(circle at 15% 80%, #100824 0, transparent 35%),
+                var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+
+        .sidebar {
+            width: 245px;
+            background: rgba(5, 3, 12, .96);
+            border-right: 1px solid var(--border);
+            padding: 30px 15px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 20;
+        }
+
+        .brand {
+            text-align: center;
+            padding: 5px 0 35px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        .brand-logo {
+            font-size: 78px;
+            font-weight: 800;
+            font-style: italic;
+            color: #b44aff;
+            line-height: 1.1;
+            text-shadow: 0 0 15px #a020ff, 0 0 35px #7500ff;
+        }
+
+        .brand-name {
+            font-size: 26px;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 17px;
+            padding: 16px 18px;
+            margin: 8px 0;
+            color: var(--muted);
+            border-radius: 12px;
+            transition: .25s;
+            font-weight: 600;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            background: linear-gradient(100deg, #7900df, #390078);
+            box-shadow: 0 0 20px rgba(153, 0, 255, .4);
+        }
+
+        .nav-icon {
+            font-size: 21px;
+            width: 25px;
+        }
+
+        /* MAIN CONTENT */
+
+        .main {
+            width: calc(100% - 245px);
+            margin-left: 245px;
+            padding: 30px;
+            max-width: 1800px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .welcome h1 {
+            font-size: clamp(25px, 3vw, 39px);
+            color: #d9a5ff;
+        }
+
+        .welcome p {
+            color: var(--muted);
+            margin-top: 7px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #a020ff, #3710a0);
+            border: 2px solid #c26aff;
+            font-weight: 800;
+        }
+
+        /* HERO */
+
+        .hero {
+            min-height: 330px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            padding: 42px;
+            border: 1px solid #922cff;
+            border-radius: 19px;
+            background:
+                linear-gradient(90deg, rgba(8, 3, 20, .98), rgba(20, 3, 43, .76)),
+                radial-gradient(circle at 75% 40%, #6a00d9, transparent 45%);
+            box-shadow: 0 0 30px rgba(128, 0, 255, .16);
+        }
+
+        .hero::after {
+            content: "S";
+            position: absolute;
+            right: 8%;
+            top: -65px;
+            font-size: 390px;
+            font-weight: 800;
+            font-style: italic;
+            color: rgba(157, 45, 255, .08);
+            text-shadow: 0 0 45px rgba(158, 40, 255, .25);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 650px;
+        }
+
+        .hero h2 {
+            font-size: clamp(35px, 5vw, 65px);
+            margin-bottom: 12px;
+            text-shadow: 0 0 18px rgba(170, 65, 255, .45);
+        }
+
+        .hero p {
+            color: #e4d7f4;
+            font-size: 17px;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .primary-btn {
+            display: inline-block;
+            padding: 14px 25px;
+            border-radius: 40px;
+            border: 2px solid #c04cff;
+            background: linear-gradient(100deg, #8000ed, #42008b);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(168, 38, 255, .45);
+            transition: .25s;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px #a020ff;
+        }
+
+        /* DASHBOARD GRID */
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 270px;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 17px;
+            gap: 10px;
+        }
+
+        .section-heading h2 {
+            font-size: 23px;
+        }
+
+        .section-heading h2 span {
+            color: var(--pink);
+        }
+
+        .view-all {
+            color: #d34cff;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* PROGRAMME CARDS */
+
+        .programme-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .programme-card {
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 19px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: linear-gradient(140deg, #171027, #090712);
+            transition: .25s;
+        }
+
+        .programme-card:hover {
+            transform: translateY(-4px);
+            border-color: #c04cff;
+            box-shadow: 0 0 22px rgba(153, 0, 255, .22);
+        }
+
+        .programme-icon {
+            min-width: 75px;
+            height: 75px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 38px;
+            background: rgba(130, 30, 255, .13);
+            border: 1px solid rgba(165, 65, 255, .35);
+        }
+
+        .programme-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .programme-info p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .topic-count {
+            color: #d18aff !important;
+            margin-top: 7px;
+        }
+
+        /* GROUPS */
+
+        .groups-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 13px;
+        }
+
+        .group-card {
+            padding: 20px 13px;
+            text-align: center;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: linear-gradient(140deg, #170e29, #090711);
+            transition: .25s;
+        }
+
+        .group-card:hover {
+            border-color: #b93cff;
+            transform: translateY(-3px);
+        }
+
+        .group-icon {
+            font-size: 35px;
+            margin-bottom: 12px;
+        }
+
+        .group-card h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .group-card p {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* RIGHT PANEL */
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .side-card {
+            padding: 23px;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            background: linear-gradient(145deg, #150e23, #080610);
+        }
+
+        .side-card h2 {
+            font-size: 20px;
+            margin-bottom: 22px;
+        }
+
+        .progress-circle {
+            width: 155px;
+            height: 155px;
+            margin: 10px auto 20px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(#a020ff 0deg, #a020ff 0deg, #29133f 0deg);
+            position: relative;
+        }
+
+        .progress-circle::before {
+            content: "";
+            position: absolute;
+            width: 125px;
+            height: 125px;
+            border-radius: 50%;
+            background: #100a1a;
+        }
+
+        .progress-value {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .progress-value strong {
+            display: block;
+            font-size: 34px;
+        }
+
+        .progress-value span {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .progress-caption {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quick-btn {
+            display: block;
+            padding: 15px;
+            border: 1px solid #a020ff;
+            border-radius: 11px;
+            text-align: center;
+            background: linear-gradient(100deg, #36006c, #16052e);
+            color: white;
+            font-weight: 600;
+            transition: .25s;
+        }
+
+        .quick-btn:hover {
+            background: #7200c9;
+            box-shadow: 0 0 17px rgba(160, 32, 255, .4);
+        }
+
+        .footer {
+            text-align: center;
+            color: #78688b;
+            font-size: 12px;
+            padding: 25px 0 5px;
+            border-top: 1px solid rgba(160, 32, 255, .18);
+        }
+
+        .footer a {
+            color: #bd76ff;
+            margin: 0 8px;
+        }
+
+        /* MOBILE */
+
+        .menu-toggle {
+            display: none;
+            background: #210c37;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 9px 13px;
+            border-radius: 8px;
+            font-size: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .right-panel {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 760px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: .3s;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main {
+                width: 100%;
+                margin-left: 0;
+                padding: 18px;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .topbar {
+                flex-wrap: wrap;
+            }
+
+            .welcome {
+                flex: 1;
+            }
+
+            .hero {
+                padding: 27px 22px;
+                min-height: 290px;
+            }
+
+            .hero::after {
+                right: -20px;
+                font-size: 250px;
+            }
+
+            .programme-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .groups-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .right-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .groups-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .programme-card {
+                padding: 13px;
+            }
+
+            .programme-icon {
+                min-width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+            <div class="brand-logo">S</div>
+            <div class="brand-name">ShadowNet</div>
+        </div>
+
+        <nav>
+            <a href="#home" class="nav-link active">
+                <span class="nav-icon">⌂</span> Home
+            </a>
+
+            <a href="#programmes" class="nav-link">
+                <span class="nav-icon">☷</span> Programmes
+            </a>
+
+            <a href="#groups" class="nav-link">
+                <span class="nav-icon">♧</span> Groups
+            </a>
+
+            <a href="#progress" class="nav-link">
+                <span class="nav-icon">▥</span> Progress
+            </a>
+
+            <a href="/profile" class="nav-link">
+                <span class="nav-icon">♙</span> Profile
+            </a>
+
+            <a href="/settings" class="nav-link">
+                <span class="nav-icon">⚙</span> Settings
+            </a>
+
+            <a href="/logout" class="nav-link">
+                <span class="nav-icon">⇥</span> Logout
+            </a>
+        </nav>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main" id="home">
+
+        <header class="topbar">
+
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
+            <div class="welcome">
+                <h1>Welcome Back</h1>
+                <p>Explore. Learn. Build your future.</p>
+            </div>
+
+            <div class="top-actions">
+                <span class="notification" title="Notifications">♧</span>
+
+                <a href="/profile" class="avatar">
+                    {{ (user.username[0] if user and user.username else 'U') | upper }}
+                </a>
+            </div>
+
+        </header>
+
+        <!-- HERO BANNER -->
+        <section class="hero">
+
+            <div class="hero-content">
+                <h2>ShadowNet</h2>
+
+                <p>
+                    Build Skills. Explore Knowledge. Stay Ahead.
+                    Access technology programmes, develop your skills,
+                    and track your learning progress.
+                </p>
+
+                <a href="#programmes" class="primary-btn">
+                    Continue Learning &nbsp; →
+                </a>
+            </div>
+
+        </section>
+
+        <div class="dashboard-grid">
+
+            <div class="left-content">
+
+                <!-- PROGRAMMES -->
+                <section class="section" id="programmes">
+
+                    <div class="section-heading">
+                        <h2>Your <span>Programmes</span></h2>
+                        <a href="#programmes" class="view-all">View All →</a>
+                    </div>
+
+                    <div class="programme-grid">
+
+                        <a href="/linux" class="programme-card">
+                            <div class="programme-icon">🐧</div>
+                            <div class="programme-info">
+                                <h3>Linux & ShadowTerminal</h3>
+                                <p>Linux systems, terminal commands and system administration.</p>
+                                <p class="topic-count">8 Topics</p>
+                            </div>
+                        </a>
+
+                        <a href="/cybersecurity" class="programme-card">
+                            <div class="programme-icon">🛡️</div>
+                            <div class="programme-info">
+                                <h3>Cybersecurity</h3>
+                                <p>Security principles, threats, defence and protection.</p>
+                                <p class="topic-count">10 Topics</p>
+                            </div>
+                        </a>
+
+                        <a href="/networking" class="programme-card">
+                            <div class="programme-icon">🌐</div>
+                            <div class="programme-info">
+                                <h3>Computer Networking</h3>
+                                <p>Network infrastructure, protocols and administration.</p>
+                                <p class="topic-count">10 Topics</p>
+                            </div>
+                        </a>
+
+                        <a href="/programming" class="programme-card">
+                            <div class="programme-icon">💻</div>
+                            <div class="programme-info">
+                                <h3>Programming</h3>
+                                <p>Python, HTML, CSS, JavaScript, C++ and more.</p>
+                                <p class="topic-count">9 Topics</p>
+                            </div>
+                        </a>
+
+                        <a href="/advanced-technology" class="programme-card">
+                            <div class="programme-icon">⚡</div>
+                            <div class="programme-info">
+                                <h3>Advanced Technology</h3>
+                                <p>Explore modern computing and emerging technologies.</p>
+                                <p class="topic-count">9 Topics</p>
+                            </div>
+                        </a>
+
+                    </div>
+
+                </section>
+
+                <!-- GROUPS -->
+                <section class="section" id="groups">
+
+                    <div class="section-heading">
+                        <h2>Your <span>Groups</span></h2>
+                        <a href="/groups" class="view-all">View All →</a>
+                    </div>
+
+                    <div class="groups-grid">
+
+                        <a href="/groups/security-analysts" class="group-card">
+                            <div class="group-icon">👥</div>
+                            <h3>Security Analysts</h3>
+                            <p>Join the discussion</p>
+                        </a>
+
+                        <a href="/groups/hackers-united" class="group-card">
+                            <div class="group-icon">👨‍💻</div>
+                            <h3>Hackers United</h3>
+                            <p>Share knowledge</p>
+                        </a>
+
+                        <a href="/groups/blue-team" class="group-card">
+                            <div class="group-icon">🔵</div>
+                            <h3>Blue Team</h3>
+                            <p>Defensive security</p>
+                        </a>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <aside class="right-panel">
+
+                <section class="side-card" id="progress">
+
+                    <h2>Your Progress</h2>
+
+                    <div class="progress-circle">
+                        <div class="progress-value">
+                            <strong id="progressNumber">0%</strong>
+                            <span>Overall Progress</span>
+                        </div>
+                    </div>
+
+                    <p class="progress-caption">
+                        Keep learning to increase your progress.
+                    </p>
+
+                </section>
+
+                <section class="side-card">
+
+                    <h2>Quick Actions</h2>
+
+                    <div class="quick-actions">
+
+                        <a href="#programmes" class="quick-btn">
+                            ▶ &nbsp; Resume Learning
+                        </a>
+
+                        <a href="#progress" class="quick-btn">
+                            ▥ &nbsp; View Progress
+                        </a>
+
+                        <a href="/achievements" class="quick-btn">
+                            🏆 &nbsp; Achievements
+                        </a>
+
+                        <a href="/ai" class="quick-btn">
+                            🤖 &nbsp; ShadowNet AI
+                        </a>
+
+                    </div>
+
+                </section>
+
+            </aside>
+
+        </div>
+
+        <footer class="footer">
+            <p>© 2026 ShadowNet. All rights reserved.</p>
+            <br>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms & Conditions</a>
+        </footer>
+
+    </main>
+
+</div>
+
+<script>
+    function toggleMenu() {
+        document.getElementById("sidebar").classList.toggle("open");
+    }
+
+    // Highlight the selected navigation link.
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", function () {
+            document.querySelectorAll(".nav-link").forEach(item => {
+                item.classList.remove("active");
+            });
+
+            this.classList.add("active");
+        });
+    });
+</script>
+
+</body>
+</html>
