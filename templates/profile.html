@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block title %}Profile{% endblock %}{% block content %}<section class="page-head"><span class="eyebrow">STUDENT PROFILE</span><h1>{{ user.username }}</h1><p>{{ user.email }}</p><p>Member since {{ user.created_at.strftime('%d %B %Y') }}</p></section>{% endblock %}
