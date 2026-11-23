@@ -1,93 +1,547 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#080b16">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{% block title %}ShadowNet{% endblock %} | ShadowNet618</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}ShadowNet{% endblock %}</title>
+
+    <meta name="description" content="ShadowNet Technology Learning Platform">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --bg: #050b14;
+            --panel: #0b1727;
+            --panel2: #102238;
+            --cyan: #00e5ff;
+            --blue: #168bff;
+            --text: #eaf6ff;
+            --muted: #91a8bb;
+            --border: rgba(0, 229, 255, .18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .navbar {
+            width: 100%;
+            min-height: 72px;
+            padding: 12px 4%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: rgba(5, 11, 20, .96);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(14px);
+        }
+
+        .brand {
+            color: var(--cyan);
+            font-size: 23px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            white-space: nowrap;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            font-size: 14px;
+            transition: .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyan);
+        }
+
+        /* TOP RIGHT PROFILE */
+
+        .profile-area {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 11px 6px 6px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            border-radius: 40px;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .profile-trigger:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 0 12px rgba(0, 229, 255, .15);
+        }
+
+        .profile-avatar {
+            width: 39px;
+            height: 39px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--cyan);
+            background: var(--panel2);
+        }
+
+        .profile-name {
+            font-size: 13px;
+            font-weight: bold;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-arrow {
+            color: var(--cyan);
+            font-size: 12px;
+        }
+
+        .profile-menu {
+            display: none;
+            position: absolute;
+            top: 57px;
+            right: 0;
+            width: 245px;
+            padding: 10px;
+            background: #0b1727;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, .5);
+        }
+
+        .profile-menu.show {
+            display: block;
+        }
+
+        .menu-header {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+
+        .menu-header strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .menu-header small {
+            color: var(--muted);
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .profile-menu a {
+            display: block;
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .profile-menu a:hover {
+            background: var(--panel2);
+            color: var(--cyan);
+        }
+
+        .profile-menu .logout {
+            color: #ff7777;
+            border-top: 1px solid var(--border);
+            margin-top: 6px;
+        }
+
+        .auth-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .auth-links a {
+            font-size: 13px;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .login-link {
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+        }
+
+        .register-link {
+            background: var(--cyan);
+            color: #00121b;
+            font-weight: bold;
+        }
+
+        main {
+            width: 100%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 25px 4%;
+            min-height: 75vh;
+        }
+
+        .flash-container {
+            max-width: 1400px;
+            margin: 15px auto;
+            padding: 0 4%;
+        }
+
+        .flash-message {
+            padding: 13px 16px;
+            margin-bottom: 10px;
+            border-radius: 9px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .flash-message.success {
+            border-color: #16c784;
+        }
+
+        .flash-message.error {
+            border-color: #ff6666;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 25px 4%;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 12px;
+        }
+
+        .footer-links a:hover {
+            color: var(--cyan);
+        }
+
+        .mobile-menu-button {
+            display: none;
+            color: var(--cyan);
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 9px;
+            border-radius: 7px;
+            font-size: 18px;
+        }
+
+        @media (max-width: 760px) {
+            .navbar {
+                flex-wrap: wrap;
+                padding: 12px 4%;
+            }
+
+            .brand {
+                font-size: 19px;
+            }
+
+            .mobile-menu-button {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                order: 4;
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0;
+                padding: 8px 0;
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 12px 4px;
+            }
+
+            .profile-name {
+                display: none;
+            }
+
+            .profile-trigger {
+                padding: 4px;
+            }
+
+            .profile-avatar {
+                width: 36px;
+                height: 36px;
+            }
+
+            .profile-arrow {
+                display: none;
+            }
+
+            .profile-menu {
+                width: 220px;
+            }
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
-  <header class="topbar">
-    <a class="brand" href="{{ url_for('index') }}">
-      <span class="brand-mark">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4Z"/>
-        </svg>
-      </span>
-      <span class="brand-text">
-        SHADOWNET
-        <small>SHADOWNET618</small>
-      </span>
-    </a>
+    <header class="navbar">
 
-    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false"
-      onclick="this.setAttribute('aria-expanded', this.getAttribute('aria-expanded')==='true'?'false':'true'); document.querySelector('.nav').classList.toggle('open')">
-      <span></span><span></span><span></span>
-    </button>
+        <a href="{{ url_for('index') }}" class="brand">
+            SHADOWNET<span style="color:white;">618</span>
+        </a>
 
-    <nav class="nav">
-      <a href="{{ url_for('academy') if session.get('user_id') else url_for('index') }}" class="nav-link">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-        Academy
-      </a>
-      {% if session.get('user_id') %}
-        <a href="{{ url_for('terminal') }}" class="nav-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-          Terminal
-        </a>
-        <a href="{{ url_for('cybersecurity') }}" class="nav-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Cybersecurity
-        </a>
-        <a href="{{ url_for('networking') }}" class="nav-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          Networking
-        </a>
-        <a href="{{ url_for('profile') }}" class="nav-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Profile
-        </a>
-        <a class="nav-cta" href="{{ url_for('logout') }}">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Sign out
-        </a>
-      {% else %}
-        <a href="{{ url_for('about') }}" class="nav-link">About</a>
-        <a href="{{ url_for('login') }}" class="nav-link">Sign in</a>
-        <a class="nav-cta" href="{{ url_for('register') }}">Join free</a>
-      {% endif %}
-    </nav>
-  </header>
+        <button class="mobile-menu-button"
+                onclick="toggleNavigation()"
+                aria-label="Toggle navigation">
+            ☰
+        </button>
 
-  <main class="container">
-    {% with messages=get_flashed_messages(with_categories=true) %}
-      {% for category,message in messages %}
-        <div class="flash {{ category }}">
-          <span>{{ message }}</span>
-          <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Dismiss">×</button>
-        </div>
-      {% endfor %}
+        <nav class="nav-links" id="navLinks">
+
+            <a href="{{ url_for('index') }}">Home</a>
+
+            {% if user %}
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('academy') }}">Academy</a>
+                <a href="{{ url_for('networking') }}">Networking</a>
+                <a href="{{ url_for('cybersecurity') }}">Cybersecurity</a>
+                <a href="{{ url_for('terminal') }}">Terminal</a>
+            {% endif %}
+
+            <a href="{{ url_for('about') }}">About</a>
+
+        </nav>
+
+        {% if user %}
+
+            <div class="profile-area">
+
+                <button class="profile-trigger"
+                        id="profileTrigger"
+                        onclick="toggleProfileMenu()"
+                        aria-expanded="false">
+
+                    {% if user.profile_picture %}
+
+                        <img
+                            src="{{ url_for('static', filename=user.profile_picture) }}"
+                            class="profile-avatar"
+                            alt="Profile picture"
+                        >
+
+                    {% else %}
+
+                        <img
+                            src="{{ url_for('static', filename='images/default-avatar.svg') }}"
+                            class="profile-avatar"
+                            alt="Default profile picture"
+                        >
+
+                    {% endif %}
+
+                    <span class="profile-name">
+                        {{ user.first_name or user.username }}
+                    </span>
+
+                    <span class="profile-arrow">▼</span>
+
+                </button>
+
+                <div class="profile-menu" id="profileMenu">
+
+                    <div class="menu-header">
+
+                        <strong>
+                            {{ user.first_name or user.username }}
+                            {{ user.last_name or '' }}
+                        </strong>
+
+                        <small>{{ user.email }}</small>
+
+                    </div>
+
+                    <a href="{{ url_for('profile') }}">
+                        👤 My Profile
+                    </a>
+
+                    <a href="{{ url_for('dashboard') }}">
+                        ◈ My Dashboard
+                    </a>
+
+                    <a href="{{ url_for('academy') }}">
+                        📚 My Learning
+                    </a>
+
+                    <a href="{{ url_for('logout') }}"
+                       class="logout">
+                        ⇥ Sign Out
+                    </a>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="auth-links">
+
+                <a href="{{ url_for('login') }}"
+                   class="login-link">
+                    Login
+                </a>
+
+                <a href="{{ url_for('register') }}"
+                   class="register-link">
+                    Create Account
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </header>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="flash-container">
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
     {% endwith %}
-    {% block content %}{% endblock %}
-  </main>
 
-  <footer>
-    <div><strong>SHADOWNET618</strong><p>Technology. Security. Networking. Innovation.</p></div>
-    <div class="footer-links">
-      <a href="{{ url_for('about') }}">About</a>
-      <a href="{{ url_for('privacy') }}">Privacy</a>
-      <a href="{{ url_for('terms') }}">Terms</a>
-    </div>
-    <small>© {{ current_year }} ShadowNet. Free learning for everyone.</small>
-  </footer>
 
-  <script src="{{ url_for('static',filename='js/app.js') }}"></script>
-  {% block scripts %}{% endblock %}
+    <main>
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+
+    <footer>
+
+        <div>
+            © {{ current_year }} ShadowNet618.
+            All rights reserved.
+        </div>
+
+        <div class="footer-links">
+
+            <a href="{{ url_for('about') }}">About</a>
+
+            <a href="{{ url_for('privacy') }}">Privacy</a>
+
+            <a href="{{ url_for('terms') }}">Terms & Conditions</a>
+
+        </div>
+
+        <p>
+            ShadowNet Technology Learning Platform.
+            Version {{ site_version }}
+        </p>
+
+    </footer>
+
+
+    <script>
+
+        function toggleProfileMenu() {
+
+            const menu = document.getElementById("profileMenu");
+            const trigger = document.getElementById("profileTrigger");
+
+            if (!menu) return;
+
+            menu.classList.toggle("show");
+
+            trigger.setAttribute(
+                "aria-expanded",
+                menu.classList.contains("show")
+            );
+        }
+
+        function toggleNavigation() {
+
+            const nav = document.getElementById("navLinks");
+
+            if (nav) {
+                nav.classList.toggle("open");
+            }
+        }
+
+        document.addEventListener("click", function(event) {
+
+            const area = document.querySelector(".profile-area");
+            const menu = document.getElementById("profileMenu");
+            const trigger = document.getElementById("profileTrigger");
+
+            if (area && menu && !area.contains(event.target)) {
+
+                menu.classList.remove("show");
+
+                if (trigger) {
+                    trigger.setAttribute("aria-expanded", "false");
+                }
+            }
+
+        });
+
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+
 </body>
-  </html>
+</html>
