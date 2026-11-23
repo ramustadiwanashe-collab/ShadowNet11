@@ -1,0 +1,192 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ language.name }} {{ level.title }} | ShadowNet{% endblock %}
+
+{% block content %}
+<style>
+.course-page {
+    max-width: 1100px;
+    margin: auto;
+    padding: 28px 18px;
+    color: #eaf4ff;
+}
+.course-header {
+    background: linear-gradient(135deg, #071b2d, #19102e);
+    border: 1px solid #15516d;
+    border-radius: 18px;
+    padding: 30px;
+}
+.course-header h1 {
+    color: #00e5ff;
+    font-size: clamp(27px, 5vw, 42px);
+}
+.course-header p {
+    color: #b8c9dc;
+    line-height: 1.7;
+}
+.course-label {
+    color: #a78bfa;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.lesson-card {
+    background: #0b1928;
+    border: 1px solid #1a3b53;
+    border-radius: 14px;
+    padding: 23px;
+    margin-top: 20px;
+}
+.lesson-card h2 {
+    color: #00e5ff;
+}
+.lesson-content {
+    color: #d0dbea;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+.lesson-content pre {
+    background: #030b13;
+    border: 1px solid #183b50;
+    border-radius: 10px;
+    padding: 15px;
+    overflow-x: auto;
+}
+.lesson-content code {
+    color: #72f1d0;
+}
+.lesson-section {
+    border-left: 3px solid #00cce8;
+    padding-left: 15px;
+    margin: 24px 0;
+}
+.lesson-section h3 {
+    color: #a78bfa;
+}
+.course-back {
+    color: #00e5ff;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+.empty-state {
+    background: #101b2a;
+    border: 1px dashed #3b5870;
+    padding: 25px;
+    border-radius: 12px;
+    color: #c4d1df;
+}
+</style>
+
+<div class="course-page">
+
+    <a class="course-back"
+       href="{{ url_for('programming.programming_language',
+                        slug=language.slug) }}">
+        ← Back to {{ language.name }}
+    </a>
+
+    <section class="course-header">
+        <div class="course-label">ShadowNet Programming Academy</div>
+
+        <h1>{{ language.name }}: {{ level.title }}</h1>
+
+        <p>
+            {{ level.description or
+            "Build your knowledge through structured lessons,
+            practical exercises and projects." }}
+        </p>
+    </section>
+
+    {% if lessons %}
+
+        {% for lesson in lessons %}
+        <article class="lesson-card">
+
+            <h2>
+                {{ loop.index }}. {{ lesson.title }}
+            </h2>
+
+            {% if lesson.objectives %}
+            <div class="lesson-section">
+                <h3>Learning Objectives</h3>
+                <ul>
+                    {% for objective in lesson.objectives %}
+                    <li>{{ objective }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if lesson.notes %}
+            <div class="lesson-section">
+                <h3>Detailed Notes</h3>
+                <div class="lesson-content">
+                    {{ lesson.notes | safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if lesson.examples %}
+            <div class="lesson-section">
+                <h3>Code Examples</h3>
+
+                {% for example in lesson.examples %}
+                <h4>{{ example.title }}</h4>
+                <div class="lesson-content">
+                    <pre><code>{{ example.code }}</code></pre>
+                    {% if example.explanation %}
+                    <p>{{ example.explanation }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if lesson.practical %}
+            <div class="lesson-section">
+                <h3>Practical Lab</h3>
+                <div class="lesson-content">
+                    {{ lesson.practical | safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if lesson.exercises %}
+            <div class="lesson-section">
+                <h3>Exercises</h3>
+                <ol>
+                    {% for exercise in lesson.exercises %}
+                    <li>{{ exercise }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+            {% if lesson.assessment %}
+            <div class="lesson-section">
+                <h3>Assessment</h3>
+                <div class="lesson-content">
+                    {{ lesson.assessment | safe }}
+                </div>
+            </div>
+            {% endif %}
+
+        </article>
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-state" style="margin-top:25px;">
+            <h2>Course content is being prepared</h2>
+            <p>
+                Detailed lessons for this level have not yet been added.
+                Check back when the course content becomes available.
+            </p>
+        </div>
+
+    {% endif %}
+
+</div>
+{% endblock %}
