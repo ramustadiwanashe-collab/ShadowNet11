@@ -2992,3 +2992,2819 @@ Use the SSL Labs Server Test (ssllabs.com) on a public website. Review the resul
 
 </section>
 <!-- END CHAPTER 4 -->
+
+<!-- CHAPTER 5: IDENTITY AND ACCESS MANAGEMENT (IAM) -->
+<section class="chapter">
+
+<h2>Chapter 5: Identity and Access Management (IAM)</h2>
+
+<p>
+Chapter 4 taught you how cryptography protects data. This chapter teaches you how systems decide who gets to access what. Every breach you read about in the news ultimately comes down to an identity failure: stolen credentials, overprivileged accounts, or missing access controls. Verizon's Data Breach Investigations Report shows that credential abuse accounts for roughly 30% of breaches, and phishing another 26%, both are identity attacks. The nature of cyberattacks has evolved "from being malware-centric to identity-centric". This chapter explains how identity works in modern systems, how attackers exploit it, and how defenders build layered controls around it.
+</p>
+
+<hr>
+
+<h3>5.1 The Core Distinction: Authentication vs. Authorization</h3>
+
+<p>
+These two terms are often confused, but they answer fundamentally different questions.
+</p>
+
+<p>
+<strong>Authentication (AuthN)</strong> proves identity. It answers: "Are you who you claim to be?" This is the login prompt, the fingerprint scan, the hardware token.
+</p>
+
+<p>
+<strong>Authorization (AuthZ)</strong> determines permissions. It answers: "Now that we know who you are, what are you allowed to do?" This is the access control list, the role assignment, the policy decision.
+</p>
+
+<p>
+The distinction matters because they fail differently. If authentication fails, an attacker gets in as someone else. If authorization fails, an authenticated user, possibly a legitimate employee, can reach resources they should never touch. Many of the worst breaches involve valid credentials used to access data far beyond what the account was meant to see.
+</p>
+
+<p>
+A useful framework for remembering the full lifecycle is AAA: Authentication (verify identity), Authorization (enforce permissions), and Accounting (log what happened). Every IAM system you encounter implements some version of these three functions.
+</p>
+
+<hr>
+
+<h3>5.2 Authentication Factors: Something You Know, Have, and Are</h3>
+
+<p>
+Authentication relies on factors, categories of evidence used to prove identity. There are three classic categories:
+</p>
+
+<h4>5.2.1 Knowledge Factors (Something You Know)</h4>
+
+<p>
+Passwords, PINs, security questions. This is the weakest factor because it can be phished, guessed, reused across sites, or stolen in a breach. Human-generated passwords are predictably bad: they use personal information, common patterns, and substitutions that cracking tools handle easily.
+</p>
+
+<p>
+<strong>Security implication:</strong> Knowledge factors alone are no longer sufficient for anything sensitive. Password-only authentication is a finding in any serious security audit.
+</p>
+
+<h4>5.2.2 Possession Factors (Something You Have)</h4>
+
+<p>
+Hardware tokens (YubiKey, smart cards), authenticator apps generating time-based codes (TOTP), or push notifications to a registered device. The security improvement over passwords is significant: an attacker who phishes your password still cannot log in without physical possession of your device.
+</p>
+
+<p>
+The caveat: SMS-based codes are technically possession factors, but they are vulnerable to SIM-swapping and interception. They are better than nothing but should be phased out for high-value accounts.
+</p>
+
+<h4>5.2.3 Inherence Factors (Something You Are)</h4>
+
+<p>
+Biometrics: fingerprints, facial recognition, iris scans, voice recognition. Convenient and hard to phish remotely, but they carry unique risks. Unlike a password, you cannot change your fingerprint if it is compromised. Biometric data also raises privacy and legal concerns that passwords do not.
+</p>
+
+<h4>5.2.4 Multi-Factor Authentication (MFA)</h4>
+
+<p>
+MFA requires two or more different factor categories. Using two passwords does not count. They are both knowledge factors. A password plus an authenticator app code is MFA (knowledge + possession). A password plus a fingerprint is MFA (knowledge + inherence).
+</p>
+
+<p>
+<strong>Why MFA matters:</strong> Microsoft's research has repeatedly shown that MFA blocks the vast majority of automated credential attacks. It does not make you invulnerable. Attackers can phish MFA codes in real time or exploit MFA fatigue (bombarding a user with push notifications until they approve one), but it raises the cost of attack dramatically. Phishing-resistant MFA (FIDO2/passkeys, hardware tokens) is the current gold standard because it binds authentication to the specific website, preventing relay attacks.
+</p>
+
+<hr>
+
+<h3>5.3 Authorization Models: How Systems Decide What You Can Do</h3>
+
+<p>
+Once identity is verified, the system must decide what that identity is permitted to access. Different models make different trade-offs between simplicity, flexibility, and administrative overhead.
+</p>
+
+<h4>5.3.1 Discretionary Access Control (DAC)</h4>
+
+<p>
+The owner of a resource decides who else can access it. Traditional Unix file permissions are the classic example: if you create a file, you control whether others can read or write it.
+</p>
+
+<p>
+<strong>Security implication:</strong> DAC is flexible but inconsistent. Users may grant access too broadly, and there is no central policy enforcing least privilege. An employee who shares a folder with "Everyone" because it is convenient has just made a discretionary access decision that a security team might disagree with.
+</p>
+
+<h4>5.3.2 Mandatory Access Control (MAC)</h4>
+
+<p>
+A central authority assigns sensitivity labels to resources and clearance levels to users. The system enforces rules like "no read up, no write down" regardless of what the resource owner wants. SELinux and AppArmor on Linux implement MAC-style controls.
+</p>
+
+<p>
+<strong>Security implication:</strong> MAC is the strongest model because users cannot override the policy. It is also the most administratively heavy. It is appropriate for high-security environments (government, defense, regulated industries) but impractical for general business use.
+</p>
+
+<h4>5.3.3 Role-Based Access Control (RBAC)</h4>
+
+<p>
+Permissions are assigned to roles, and users are assigned to roles. A "Help Desk Technician" role has specific permissions; anyone in that role inherits them. When someone changes jobs, you change their role, not their individual permissions.
+</p>
+
+<p>
+<strong>Why RBAC dominates enterprise environments:</strong> It scales. Managing individual permissions for thousands of users is impossible; managing dozens of roles is tractable. It also supports clean provisioning and deprovisioning: a new hire gets the "Accountant" role, and a departing employee is removed from all roles.
+</p>
+
+<p>
+<strong>The risk:</strong> Role explosion. Organizations create so many specialized roles that the model collapses into individual permissions. Regular access reviews are essential to prevent roles from accumulating unnecessary permissions over time.
+</p>
+
+<h4>5.3.4 Attribute-Based Access Control (ABAC)</h4>
+
+<p>
+Authorization decisions evaluate attributes of the user (department, clearance, location), the resource (classification, owner), the action (read, write, delete), and the environment (time of day, network location).
+</p>
+
+<p>A policy might state:</p>
+
+<pre><code>Allow access if:
+user.department == resource.department
+AND user.location == 'office'
+AND time &lt; 18:00</code></pre>
+
+<p>
+<strong>Security implication:</strong> ABAC is the most flexible and enables fine-grained, context-aware policies. It is also the most complex to design and audit. Modern Zero Trust architectures increasingly rely on ABAC-style continuous evaluation rather than one-time role checks.
+</p>
+
+<h4>5.3.5 The Principle of Least Privilege</h4>
+
+<p>
+Across all models, one principle is non-negotiable: every identity should have only the minimum access necessary to perform its function, for only as long as necessary. Overprivileged accounts are among the most valuable targets for attackers because compromising one account yields access to many resources. Regular access reviews, just-in-time elevation, and automated deprovisioning are the operational practices that enforce least privilege.
+</p>
+
+<hr>
+
+<h3>5.4 Single Sign-On (SSO) and Federation</h3>
+
+<h4>5.4.1 The Problem SSO Solves</h4>
+
+<p>
+Without SSO, every application has its own login. Users reuse passwords (bad), forget passwords (costly), and create shadow IT accounts outside IT's visibility (dangerous). SSO allows a user to authenticate once and access multiple applications without re-entering credentials.
+</p>
+
+<h4>5.4.2 How SSO Works</h4>
+
+<p>
+An Identity Provider (IdP) is the central authority that authenticates users. When a user accesses an application (the Service Provider, SP), the application redirects them to the IdP. The IdP verifies their identity (using MFA, ideally) and issues a token or assertion confirming authentication. The application trusts the IdP's assertion and grants access.
+</p>
+
+<p>
+Federation extends this trust across organizational boundaries. Your corporate credentials can access a partner's application, or your Google account can log you into a third-party service, because the organizations have established a trust relationship.
+</p>
+
+<h4>5.4.3 SSO Risks</h4>
+
+<p>
+SSO concentrates risk. If the IdP is compromised, every connected application is compromised. If a user's SSO session is hijacked, the attacker gains access to everything the user can reach. This is why IdP security is paramount: strong MFA on the IdP itself, session monitoring, and short session lifetimes for sensitive applications.
+</p>
+
+<hr>
+
+<h3>5.5 Privileged Access Management (PAM)</h3>
+
+<h4>5.5.1 What Makes Privileged Access Different</h4>
+
+<p>
+Privileged accounts have elevated permissions: domain administrators, root accounts, database administrators, service accounts with broad access. Gartner defines PAM as the tools and practices that control and secure these accounts, for both humans and machines.
+</p>
+
+<p>
+<strong>Why it matters:</strong> Misuse of privileged access represents "catastrophic risk" because these accounts can create, modify, and delete IT infrastructure and the data within it. An attacker who obtains Domain Admin in Active Directory controls the entire enterprise. An attacker who steals a cloud administrator credential controls the entire cloud environment.
+</p>
+
+<h4>5.5.2 Core PAM Capabilities</h4>
+
+<p><strong>Credential vaulting:</strong></p>
+<p>
+Privileged passwords and keys are stored in an encrypted vault, not on sticky notes or in spreadsheets. Administrators check out credentials when needed, and the vault rotates them automatically after use.
+</p>
+
+<p><strong>Session brokering and recording:</strong></p>
+<p>
+Administrators access privileged systems through a proxy that records every keystroke and screen. The administrator never sees the actual password; the PAM system injects it. This provides both security and forensic evidence.
+</p>
+
+<p><strong>Just-in-Time (JIT) access:</strong></p>
+<p>
+Instead of standing privileges (an admin account that is always privileged), JIT grants elevated access only when needed, for a limited time, with a specific reason. This dramatically reduces the window of opportunity for an attacker.
+</p>
+
+<p><strong>Secrets management for machines:</strong></p>
+<p>
+Applications and services also need credentials (API keys, database passwords). PAM tools manage these secrets so they are not hardcoded in source code or configuration files.
+</p>
+
+<h4>5.5.3 The Attacker's Perspective on PAM</h4>
+
+<p>
+Attackers specifically hunt for privileged credentials. Common techniques include dumping LSASS memory on a compromised workstation to find cached admin credentials, searching for password files in scripts and configuration repositories, and Kerberoasting service accounts with weak passwords. PAM does not stop a determined attacker from compromising a workstation, but it limits what they can do with the credentials they find.
+</p>
+
+<hr>
+
+<h3>5.6 How Attackers Attack Identity</h3>
+
+<p>
+Understanding attack techniques is essential for designing defenses.
+</p>
+
+<h4>Credential Stuffing</h4>
+<p>
+Attackers take username/password pairs leaked from one breach and try them on other services. It works because users reuse passwords.
+</p>
+<p><strong>Defense:</strong> MFA, breach monitoring, and password blocklists.</p>
+
+<h4>Phishing</h4>
+<p>
+Tricking users into entering credentials on a fake site or granting OAuth permissions to a malicious application. Modern phishing uses AI-generated, highly convincing messages.
+</p>
+<p><strong>Defense:</strong> Phishing-resistant MFA, email filtering, and user training.</p>
+
+<h4>MFA Fatigue / Push Bombing</h4>
+<p>
+Bombarding a user with MFA push notifications until they approve one out of annoyance or confusion.
+</p>
+<p><strong>Defense:</strong> Number matching (the user must enter a code shown on the login screen), rate limiting, and user education.</p>
+
+<h4>Session Hijacking</h4>
+<p>
+Stealing a valid session cookie or token to bypass authentication entirely.
+</p>
+<p><strong>Defense:</strong> Short session lifetimes, binding sessions to device fingerprints, and monitoring for anomalous session activity.</p>
+
+<h4>Privilege Escalation</h4>
+<p>
+Exploiting misconfigurations or vulnerabilities to move from a low-privilege account to a high-privilege one.
+</p>
+<p><strong>Defense:</strong> Least privilege, patch management, and monitoring for unusual privilege changes.</p>
+
+<hr>
+
+<h3>Chapter 5 Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Authentication vs. Authorization</strong></td>
+<td>AuthN proves identity; AuthZ enforces permissions. They fail in different ways and require different controls.</td>
+</tr>
+<tr>
+<td><strong>Authentication Factors</strong></td>
+<td>Knowledge (password), Possession (token/app), Inherence (biometric). MFA requires different categories. Phishing-resistant MFA is the goal.</td>
+</tr>
+<tr>
+<td><strong>Authorization Models</strong></td>
+<td>DAC (owner decides), MAC (central policy), RBAC (roles), ABAC (attributes). RBAC dominates enterprise; least privilege is universal.</td>
+</tr>
+<tr>
+<td><strong>SSO and Federation</strong></td>
+<td>One login for many apps. Concentrates risk in the IdP. Protect it accordingly.</td>
+</tr>
+<tr>
+<td><strong>PAM</strong></td>
+<td>Controls privileged accounts with vaulting, session recording, and just-in-time access. Critical because privileged compromise means enterprise compromise.</td>
+</tr>
+<tr>
+<td><strong>Identity Attacks</strong></td>
+<td>Credential stuffing, phishing, MFA fatigue, session hijacking. Identity is the primary attack surface in modern breaches.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Next Chapter Preview</h3>
+
+<p>
+Chapter 6 moves into threats, attacks, and vulnerabilities. You will learn the taxonomy of malware, the mechanics of social engineering, the structure of network attacks, and how to analyze indicators of compromise. This is where the concepts from Chapters 1–5 come together into a practical understanding of how attacks actually unfold.
+</p>
+
+<hr>
+
+<div class="exercise">
+
+<h3>Chapter 5 Exercises</h3>
+<p><strong>Estimated time: 5–7 hours</strong></p>
+
+<h4>Exercise 1: Authentication Factor Audit</h4>
+
+<p>
+List five accounts you use regularly (email, banking, social media, work/school). For each, identify which authentication factors are in use. Which accounts rely on a single factor? What would it take to add a second factor to each?
+</p>
+
+<h4>Exercise 2: RBAC Design Exercise</h4>
+
+<p>
+Design a simple RBAC model for a small company with three departments (Engineering, Sales, HR). Define at least four roles and the permissions each role should have. Identify one permission that might be tempting to grant broadly but should be restricted.
+</p>
+
+<h4>Exercise 3: SSO Risk Analysis</h4>
+
+<p>
+Write a short paragraph explaining why compromising an organization's Identity Provider is more damaging than compromising a single application's login database.
+</p>
+
+<h4>Exercise 4: PAM Scenario</h4>
+
+<p>
+An attacker compromises a developer's laptop. The developer has a local administrator account on their machine and a database administrator account stored in a configuration file on the laptop. Explain how PAM controls (credential vaulting, JIT access, session recording) would limit the damage the attacker can cause.
+</p>
+
+<h4>Exercise 5: TryHackMe</h4>
+
+<p>
+Complete the Intro to Authentication or Identity and Access Management room if available, or complete the OWASP Top 10 room focusing on Broken Access Control.
+</p>
+
+</div>
+
+</section>
+<!-- END CHAPTER 5 -->
+<!-- CHAPTER 6: THREATS, ATTACKS, AND VULNERABILITIES -->
+<section class="chapter">
+
+<h2>Chapter 6: Threats, Attacks, and Vulnerabilities</h2>
+
+<p>Chapters 1 through 5 built your foundation: what security is, how networks work, how operating systems function, how cryptography protects data, and how identity is verified. This chapter brings those pieces together into a practical understanding of how attacks actually unfold.</p>
+
+<p>You will learn the taxonomy of malware, the psychology and mechanics of social engineering, the structure of network attacks, the most common web application vulnerabilities, and how defenders use indicators of compromise to detect intrusions.</p>
+
+<p>The goal is not to memorize a list of attack names. The goal is to develop a mental model of how attackers operate so that when you see a suspicious log entry, an unusual process, or an odd network connection, you can reason about what is happening and what to do next.</p>
+
+<hr>
+
+<h3>6.1 Malware Taxonomy: Classifying Malicious Software</h3>
+
+<p>Malware is short for "malicious software". It refers to any code designed to infiltrate, damage, or gain unauthorized access to systems. The categories below are not mutually exclusive. Modern malware often combines multiple behaviors.</p>
+
+<h4>6.1.1 Viruses</h4>
+
+<p>A virus attaches itself to a legitimate file, called the host, and spreads when that file is executed. It requires user action to propagate, such as clicking an infected attachment, running a pirated application, or plugging in an infected USB drive. Viruses often corrupt or destroy data.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> Viruses remain common in file-sharing and removable-media scenarios. Antivirus signatures still target them heavily.
+</div>
+
+<h4>6.1.2 Worms</h4>
+
+<p>A worm is self-replicating malware that spreads across networks without needing a host file or user action. It exploits vulnerabilities in network protocols or software to propagate automatically.</p>
+
+<p>The classic example is WannaCry (2017), which used the EternalBlue exploit against unpatched SMB services to spread across the internet in hours.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> Worms are particularly dangerous because they do not need a human to click anything. Patch management and network segmentation are the primary defenses.
+</div>
+
+<h4>6.1.3 Trojans</h4>
+
+<p>A trojan disguises itself as legitimate software. Once executed, it creates a backdoor or performs malicious actions while appearing to be something the user wanted.</p>
+
+<p>Unlike viruses and worms, trojans do not self-replicate. They rely on deception to be installed.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> Trojans are a primary delivery mechanism for ransomware, remote access trojans (RATs), and credential stealers. Application allowlisting and user awareness are key defenses.
+</div>
+
+<h4>6.1.4 Ransomware</h4>
+
+<p>Ransomware encrypts the victim's files and demands payment for the decryption key.</p>
+
+<p>Modern ransomware operations are highly industrialized. Affiliates break in, encrypt data, and exfiltrate it first to threaten public release. This is known as double extortion.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> Ransomware is one of the most financially damaging malware categories. The 2021 Colonial Pipeline attack, which disrupted fuel supply across the U.S. East Coast, began with a compromised VPN password. Backups that are tested, offline, and immutable provide a reliable recovery mechanism.
+</div>
+
+<h4>6.1.5 Spyware and Adware</h4>
+
+<p>Spyware secretly monitors user activity, including keystrokes, browsing habits, and credentials, then reports it to the attacker.</p>
+
+<p>Adware displays unwanted advertisements and tracks browsing behavior, often bundled with free software.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> Spyware is a confidentiality attack. It can operate for months without obvious symptoms, making it difficult to detect without endpoint monitoring.
+</div>
+
+<h4>6.1.6 Rootkits</h4>
+
+<p>A rootkit is a collection of files that alters the operating system's standard functionality to hide the attacker's presence and grant administrator-level access.</p>
+
+<p>Rootkits can suppress process listings, hide files, and intercept system calls so that the attacker's tools remain invisible.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> Rootkits are extremely difficult to detect from within the infected operating system. Memory forensics, integrity checking with offline tools, and reimaging from known-good sources are standard responses.
+</div>
+
+<h4>6.1.7 Botnets and Zombies</h4>
+
+<p>A zombie is a compromised computer manipulated without the owner's knowledge. A botnet is a network of zombies under remote control.</p>
+
+<p>Botnets are used for DDoS attacks, spam distribution, cryptocurrency mining, and credential stuffing.</p>
+
+<div class="tip">
+<strong>Security relevance:</strong> An organization's machines may be part of a botnet without anyone noticing until outbound traffic triggers an ISP alert. Monitoring for beaconing, which involves regular check-ins to external command-and-control servers, is essential.
+</div>
+
+<hr>
+
+<h3>6.2 Social Engineering: Hacking the Human</h3>
+
+<p>Social engineering is the use of psychological manipulation to convince people to take actions or disclose information that compromises security.</p>
+
+<p>It is a reliable way past technical controls because no firewall can stop an employee from voluntarily clicking a malicious link.</p>
+
+<h4>6.2.1 The Social Engineering Lifecycle</h4>
+
+<p>Social engineering attacks typically follow four phases:</p>
+
+<ol>
+<li><strong>Information gathering:</strong> The attacker researches the target using social media, LinkedIn, company websites, and public documents to craft a believable pretext.</li>
+
+<li><strong>Trust establishment:</strong> The attacker builds rapport, often impersonating a trusted figure such as IT support, a vendor, or an executive, or referencing real internal context.</li>
+
+<li><strong>Manipulation:</strong> The attacker leverages urgency, authority, fear, or curiosity to prompt the desired action, such as clicking a link, revealing a password, or approving a transfer.</li>
+
+<li><strong>Exit:</strong> The attacker completes the objective and withdraws, often leaving the victim unaware that anything happened.</li>
+</ol>
+
+<h4>6.2.2 Common Social Engineering Vectors</h4>
+
+<p><strong>Phishing:</strong> Bulk fraudulent emails that impersonate legitimate organizations. The goal is credential theft, malware delivery, or payment fraud. Modern phishing is often AI-generated, with flawless grammar and personalized context.</p>
+
+<p><strong>Spear phishing:</strong> Targeted phishing against a specific individual, using researched details such as their manager's name, a project they are working on, or a recent conference they attended to maximize credibility.</p>
+
+<p><strong>Whaling:</strong> Spear phishing targeting senior executives, including CEOs, CFOs, and board members, who have access to high-value data and authority to approve large transactions.</p>
+
+<p><strong>Business Email Compromise (BEC):</strong> Impersonating or compromising an executive's email to instruct employees to make wire transfers or disclose sensitive data. BEC is one of the most financially costly cybercrime categories.</p>
+
+<p><strong>Vishing (voice phishing):</strong> Phone calls impersonating IT support, banks, or government agencies. AI voice cloning now makes it possible to impersonate a specific executive's voice with only a few seconds of audio.</p>
+
+<p><strong>Smishing (SMS phishing):</strong> Text messages containing malicious links or prompts to call a fraudulent number.</p>
+
+<h4>6.2.3 Why Social Engineering Works</h4>
+
+<p>Social engineering exploits cognitive biases that are normally useful:</p>
+
+<table>
+<thead>
+<tr>
+<th>Psychological Factor</th>
+<th>How It Works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authority bias</td>
+<td>People comply with perceived authority figures.</td>
+</tr>
+<tr>
+<td>Urgency</td>
+<td>Time pressure short-circuits careful thinking.</td>
+</tr>
+<tr>
+<td>Social proof</td>
+<td>"Everyone else has already done this."</td>
+</tr>
+<tr>
+<td>Reciprocity</td>
+<td>A small favor creates a sense of obligation.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Defense:</strong> Technical controls such as email filtering, MFA, and link scanning reduce attack volume. The durable defense is a culture where employees feel safe questioning requests and reporting suspicious contact without fear of blame.
+</div>
+
+<hr>
+
+<h3>6.3 Network Attacks</h3>
+
+<p>Network attacks target the confidentiality, integrity, or availability of communications. The following are common categories encountered in security operations.</p>
+
+<h4>6.3.1 Denial of Service (DoS) and Distributed Denial of Service (DDoS)</h4>
+
+<p>A DoS attack overwhelms a target with traffic or resource exhaustion so that legitimate users cannot access it. A DDoS attack uses many distributed sources, often a botnet, to amplify the attack.</p>
+
+<p>Common DDoS techniques include:</p>
+
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SYN flood</td>
+<td>Sends large numbers of TCP SYN packets without completing the handshake, exhausting the server's connection table.</td>
+</tr>
+<tr>
+<td>ICMP flood</td>
+<td>Also called a ping flood. Overwhelms the target with ICMP Echo Requests.</td>
+</tr>
+<tr>
+<td>NTP/DNS amplification</td>
+<td>Sends small spoofed requests to public servers, which respond with large replies to the victim's IP address, amplifying attack traffic.</td>
+</tr>
+<tr>
+<td>Slowloris</td>
+<td>Opens many HTTP connections and holds them open with partial requests, exhausting the web server's connection pool with minimal traffic.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Defense:</strong> DDoS mitigation services, rate limiting, and upstream filtering by ISPs.
+</div>
+
+<h4>6.3.2 Man-in-the-Middle (MITM) Attacks</h4>
+
+<p>In a MITM attack, the attacker positions themselves between two communicating parties, intercepting and potentially modifying traffic.</p>
+
+<p>Common vectors include:</p>
+
+<ul>
+<li>ARP spoofing on local networks, covered in Chapter 2.</li>
+<li>Rogue Wi-Fi access points that mimic legitimate hotspots.</li>
+<li>DNS spoofing to redirect traffic to malicious servers.</li>
+<li>Compromised routers or BGP hijacking.</li>
+</ul>
+
+<div class="tip">
+<strong>Defense:</strong> TLS with certificate validation, dynamic ARP inspection, and user awareness of Wi-Fi risks.
+</div>
+
+<h4>6.3.3 Spoofing</h4>
+
+<p>IP spoofing forges the source address in packets. It is used in DDoS amplification attacks and to bypass IP-based access controls.</p>
+
+<p>Email spoofing forges the sender address in emails. This is why DMARC, DKIM, and SPF email authentication standards exist.</p>
+
+<h4>6.3.4 Credential Attacks</h4>
+
+<table>
+<thead>
+<tr>
+<th>Attack</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brute force</td>
+<td>Tries every possible password combination.</td>
+</tr>
+<tr>
+<td>Dictionary attack</td>
+<td>Uses a curated list of common passwords and variations.</td>
+</tr>
+<tr>
+<td>Credential stuffing</td>
+<td>Uses username and password pairs leaked from one breach against other services, exploiting password reuse.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Defense:</strong> Account lockout policies, MFA, and breached-password detection.
+</div>
+
+<hr>
+
+<h3>6.4 Web Application Attacks</h3>
+
+<p>Web applications are the most exposed part of many organizations. The OWASP Top 10 is an industry-standard reference for the most critical web application security risks. The 2025 edition reflects the current threat landscape.</p>
+
+<h4>6.4.1 A01: Broken Access Control</h4>
+
+<p>Access control failures occur when an application does not properly restrict what an authenticated user can do.</p>
+
+<p>Examples include accessing another user's data by changing an ID in a URL, or performing administrative actions without the required role.</p>
+
+<div class="tip">
+<strong>Why it is #1:</strong> It is the most common and impactful web vulnerability. A single access control flaw can expose all data in an application.
+</div>
+
+<h4>6.4.2 A02: Security Misconfiguration</h4>
+
+<p>Default accounts with unchanged passwords, unnecessary features enabled, verbose error messages revealing internal details, and improperly configured cloud storage permissions all fall into this category.</p>
+
+<p>It rose to #2 in 2025 because so much of application security now depends on correct configuration of frameworks, platforms, and cloud services.</p>
+
+<h4>6.4.3 A03: Software Supply Chain Failures</h4>
+
+<p>This category expanded from "Vulnerable and Outdated Components" to cover the entire supply chain, including third-party dependencies, build tools, CI/CD pipelines, and update delivery mechanisms.</p>
+
+<p>The SolarWinds attack (2020) is a canonical example. Attackers compromised the build pipeline to distribute malware through a trusted software update.</p>
+
+<h4>6.4.4 A05: Injection</h4>
+
+<p>Injection occurs when untrusted data is sent to an interpreter as part of a command or query.</p>
+
+<p>SQL injection is the classic example. User input is concatenated into a database query, allowing an attacker to manipulate the query logic.</p>
+
+<p>Cross-site scripting (XSS) is another form of injection, where malicious JavaScript is injected into pages viewed by other users.</p>
+
+<div class="tip">
+<strong>Defense:</strong> Parameterized queries, input validation, output encoding, and content security policies.
+</div>
+
+<h4>6.4.5 A07: Authentication Failures</h4>
+
+<p>Weak password policies, missing MFA, insecure session management, and credential stuffing vulnerabilities fall into this category.</p>
+
+<p>The shift toward standardized authentication frameworks is slowly reducing these failures, but they remain common.</p>
+
+<h4>6.4.6 A09: Security Logging and Alerting Failures</h4>
+
+<p>Insufficient logging, missing alerts, and logs that are not monitored mean breaches go undetected for longer.</p>
+
+<p>The 2025 name change emphasizes that logging without alerting is nearly worthless. The goal is to trigger action on relevant events.</p>
+
+<hr>
+
+<h3>6.5 Indicators of Compromise (IoCs)</h3>
+
+<p>An Indicator of Compromise (IoC) is an observable artifact that suggests malicious activity. IoCs help defenders detect intrusions, block malicious traffic, and associate activity with known threat actors.</p>
+
+<h4>6.5.1 The Pyramid of Pain</h4>
+
+<p>The Pyramid of Pain ranks IoCs by how much difficulty, or "pain", an attacker faces when a defender blocks them.</p>
+
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>IoC Type</th>
+<th>Attacker Pain to Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bottom</td>
+<td>File hashes (MD5, SHA-256)</td>
+<td>Trivial. Recompile the malware.</td>
+</tr>
+<tr>
+<td>Lower</td>
+<td>IP addresses</td>
+<td>Easy. Change hosting.</td>
+</tr>
+<tr>
+<td>Middle</td>
+<td>Domain names</td>
+<td>Moderate. Register new domains.</td>
+</tr>
+<tr>
+<td>Higher</td>
+<td>Network/host artifacts</td>
+<td>Harder. Modify tooling and behavior.</td>
+</tr>
+<tr>
+<td>Top</td>
+<td>TTPs (Tactics, Techniques, Procedures)</td>
+<td>Very hard. Change the entire operational approach.</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>The defender's insight:</strong> Blocking hashes is easy but fragile. An attacker can change one byte and produce a different hash. Detecting TTPs, such as PowerShell spawning from Office applications, is harder but far more durable because the attacker must fundamentally change how they operate to evade detection.</p>
+
+<h4>6.5.2 Common IoC Types</h4>
+
+<table>
+<thead>
+<tr>
+<th>IoC Category</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Network IoCs</td>
+<td>Malicious IP addresses, domains, TLS certificate hashes, and unusual port/protocol combinations.</td>
+</tr>
+<tr>
+<td>Host IoCs</td>
+<td>File hashes of malicious binaries, registry keys created by malware, scheduled tasks, and service installations.</td>
+</tr>
+<tr>
+<td>Behavioral IoCs</td>
+<td>Process ancestry anomalies, such as winword.exe spawning powershell.exe, beaconing patterns, and credential dumping tool execution, such as Mimikatz.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>6.5.3 From IoCs to Detection</h4>
+
+<p>IoCs are most valuable when they are operationalized. They can be fed into SIEM rules, EDR policies, and firewall blocklists.</p>
+
+<p>However, IoCs alone are insufficient. Skilled attackers rotate infrastructure and modify tools constantly.</p>
+
+<p>The mature approach combines IoC matching with behavioral detection based on the MITRE ATT&CK framework. This means detecting the technique, not just the tool.</p>
+
+<hr>
+
+<h3>Chapter 6 Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Malware Taxonomy</td>
+<td>Viruses need hosts; worms self-propagate; trojans deceive; ransomware extorts; rootkits hide; botnets amplify.</td>
+</tr>
+<tr>
+<td>Social Engineering</td>
+<td>Exploits human psychology, not technical flaws. Phishing, spear phishing, vishing, and BEC are common examples. Defense is cultural, not just technical.</td>
+</tr>
+<tr>
+<td>Network Attacks</td>
+<td>DDoS exhausts availability; MITM intercepts traffic; spoofing forges identity. Defense is layered through filtering, encryption, and segmentation.</td>
+</tr>
+<tr>
+<td>Web Application Attacks</td>
+<td>OWASP Top 10 is the standard reference. Broken access control, misconfiguration, and injection are perennial leaders.</td>
+</tr>
+<tr>
+<td>IoCs</td>
+<td>Observable artifacts of compromise. In the Pyramid of Pain, hashes are easy to change while TTPs are difficult to change. Behavioral detection is more durable than signature matching.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Next chapter preview:</strong> Chapter 7 begins Part III: Offensive Security. You will learn how ethical hackers perform reconnaissance, scan networks with Nmap, and identify vulnerabilities in target systems. This is where you transition from understanding attacks theoretically to executing them in controlled, legal environments.
+</div>
+
+<hr>
+
+<div class="exercise">
+
+<h3>Chapter 6 Exercises</h3>
+
+<p><strong>Estimated completion time:</strong> 6–8 hours.</p>
+
+<h4>Exercise 1: Malware Classification Drill</h4>
+
+<p>For each scenario, identify the malware category:</p>
+
+<ol type="a">
+<li>A file called "invoice.pdf.exe" that installs a backdoor when run.</li>
+<li>Code that spreads from computer to computer by exploiting an unpatched SMB vulnerability.</li>
+<li>Software that encrypts all files on a shared drive and leaves a ransom note.</li>
+</ol>
+
+<h4>Exercise 2: Social Engineering Analysis</h4>
+
+<p>Find a recent phishing email example from your email provider's spam folder or a public example from a security blog.</p>
+
+<p>Identify the psychological levers it uses, such as authority, urgency, fear, or curiosity, and the specific action it is trying to prompt.</p>
+
+<h4>Exercise 3: OWASP Top 10 Review</h4>
+
+<p>Read the OWASP Top 10 2025 introduction page. Write a one-paragraph summary of what changed from 2021 and why.</p>
+
+<h4>Exercise 4: IoC Identification</h4>
+
+<p>Review a threat intelligence report, such as one from a cybersecurity vendor blog.</p>
+
+<p>Identify at least three IoCs mentioned, including an IP address, domain, hash, or behavioral indicator. Classify each according to the Pyramid of Pain.</p>
+
+<h4>Exercise 5: TryHackMe Practical Learning</h4>
+
+<p>Complete the Pre-Security path modules on Network Fundamentals and Web Fundamentals if you have not already, or complete the OWASP Top 10 room.</p>
+
+</div>
+
+</section>
+<!-- END CHAPTER 6 -->
+<!-- CHAPTER 7: RECONNAISSANCE AND SCANNING -->
+<section class="chapter">
+
+<h2>Chapter 7: Reconnaissance and Scanning</h2>
+
+<p>Chapter 6 gave you the attacker's playbook. This chapter picks up the first tool in that playbook: how an attacker or an ethical hacker learns everything possible about a target before launching a single exploit.</p>
+
+<p>Reconnaissance is the phase where patience pays off. A thorough recon phase can reveal forgotten subdomains, exposed admin panels, leaked credentials, and misconfigured services that no amount of exploitation skill could compensate for.</p>
+
+<p>This chapter covers passive reconnaissance (OSINT) and active scanning with Nmap, the two pillars of the information-gathering phase.</p>
+
+<hr>
+
+<h3>7.1 The Reconnaissance Mindset</h3>
+
+<p>Reconnaissance is about reducing uncertainty. Before you touch a target, you want to know:</p>
+
+<ul>
+<li>What domains and subdomains exist?</li>
+<li>What IP ranges belong to the organization?</li>
+<li>What technologies are in use?</li>
+<li>Are there login portals, development servers, or cloud storage buckets exposed to the internet?</li>
+<li>Who works there, and what can their public profiles tell you?</li>
+</ul>
+
+<p>The distinction between passive and active reconnaissance matters for both operational security and legal reasons.</p>
+
+<h4>Passive Reconnaissance</h4>
+
+<p>Passive reconnaissance involves collecting information without directly interacting with the target's systems. You query public databases, search engines, and third-party sources. The target has no way to know you are looking.</p>
+
+<h4>Active Reconnaissance</h4>
+
+<p>Active reconnaissance involves sending traffic directly to the target, such as port scans, service probes, and DNS queries. This is more reliable but generates logs and can trigger alerts. It also has legal implications: unauthorized active scanning can be a crime in many jurisdictions.</p>
+
+<div class="tip">
+<strong>Ethical and legal rule:</strong> Only perform active reconnaissance against systems you own or have explicit written permission to test.
+</div>
+
+<hr>
+
+<h3>7.2 Passive Reconnaissance: OSINT</h3>
+
+<p>OSINT (Open Source Intelligence) is intelligence collected from publicly available sources. For security professionals, OSINT is used both offensively, to map an attack surface, and defensively, to discover what an organization is exposing.</p>
+
+<h4>7.2.1 Domain and Subdomain Enumeration</h4>
+
+<p>The first question in external reconnaissance is: what does the target own on the internet?</p>
+
+<p><strong>WHOIS queries:</strong> Return registration details for a domain, including registrant organization, name servers, creation date, and contact information. Privacy services often mask these details. WHOIS is a starting point for identifying related domains and infrastructure.</p>
+
+<p><strong>Certificate Transparency (CT) logs:</strong> Every publicly trusted TLS certificate is logged. Searching CT logs for a domain can reveal subdomains the organization may have forgotten about, including development servers, staging environments, VPN gateways, and internal tools that were briefly exposed.</p>
+
+<p><strong>Subdomain brute-forcing:</strong> Uses wordlists to guess subdomain names such as dev.example.com, admin.example.com, and vpn.example.com, then checks whether they resolve. Tools like ffuf or gobuster automate this. It is technically active because you are making DNS queries, but it is low-noise.</p>
+
+<p><strong>DNS enumeration:</strong> Can reveal mail servers through MX records, TXT records that sometimes contain SPF/DMARC configurations or verification tokens, and name server infrastructure.</p>
+
+<h4>7.2.2 Google Dorking</h4>
+
+<p>Google Dorking uses advanced search operators to find information that organizations did not intend to expose. The technique is legal because you are querying a public search engine, but the findings can be sensitive.</p>
+
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Function</th>
+<th>Security Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>site:</code></td>
+<td>Restricts results to a domain.</td>
+<td><code>site:example.com</code> shows indexed pages.</td>
+</tr>
+<tr>
+<td><code>filetype:</code></td>
+<td>Restricts results to a file type.</td>
+<td><code>site:example.com filetype:xlsx</code> finds indexed spreadsheets.</td>
+</tr>
+<tr>
+<td><code>intitle:</code></td>
+<td>Matches text in a page title.</td>
+<td><code>site:example.com intitle:"index of"</code> finds open directory listings.</td>
+</tr>
+<tr>
+<td><code>inurl:</code></td>
+<td>Matches text in a URL.</td>
+<td><code>site:example.com inurl:admin</code> finds indexed admin pages.</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Example dorks and what they reveal:</strong></p>
+
+<ul>
+<li><code>site:example.com intitle:"index of"</code>: Directory listings that expose file structures.</li>
+<li><code>site:example.com inurl:wp-login.php</code>: WordPress login pages.</li>
+<li><code>site:example.com inurl:phpmyadmin</code>: Database administration interfaces exposed to the internet.</li>
+<li><code>"example.com" site:pastebin.com</code>: Your domain mentioned in public pastes, potentially including credentials.</li>
+</ul>
+
+<div class="tip">
+<strong>Defensive use:</strong> Run these searches against your own organization quarterly. If you find an exposed admin panel, you have found a problem before an attacker did.
+</div>
+
+<h4>7.2.3 Infrastructure and Technology Fingerprinting</h4>
+
+<p><strong>Shodan</strong> and <strong>Censys</strong> are search engines for internet-connected devices. They continuously scan the IPv4 address space and index the banners returned by services.</p>
+
+<p>Searching for an organization's IP range in Shodan can reveal open ports, service versions, and sometimes default credentials or misconfigurations, without sending a packet directly to the target during your search.</p>
+
+<p><strong>BuiltWith</strong> and <strong>Wappalyzer</strong> identify technologies a website uses, including web servers, CMS platforms, JavaScript frameworks, and analytics tools. This information helps determine which vulnerabilities to investigate.</p>
+
+<h4>7.2.4 People and Organizational Intelligence</h4>
+
+<p>Social media and professional networks such as LinkedIn reveal employee names, roles, email address formats, and organizational structure. This information can feed phishing and social engineering campaigns.</p>
+
+<p>For defenders, this is a reminder that employee information is part of the attack surface.</p>
+
+<p><strong>Have I Been Pwned</strong> and similar breach databases allow you to check whether corporate email addresses have appeared in known data breaches. A breached password reused on a corporate account can provide a direct path to compromise.</p>
+
+<hr>
+
+<h3>7.3 Active Scanning with Nmap</h3>
+
+<p>Nmap (Network Mapper) is the standard tool for active network reconnaissance. It answers four questions:</p>
+
+<ol>
+<li>What hosts are alive?</li>
+<li>What ports are open?</li>
+<li>What services are running?</li>
+<li>What operating system is the target using?</li>
+</ol>
+
+<h4>7.3.1 Host Discovery</h4>
+
+<p>Before scanning ports, you need to know which hosts are online. Scanning every port on every IP in a /16 network would take weeks. Host discovery, also called a ping scan, reduces the target list to active hosts.</p>
+
+<p>By default, Nmap sends four probes to each target: an ICMP echo request (ping), a TCP SYN to port 443, a TCP ACK to port 80, and an ICMP timestamp request. If any probe receives a response, the host is considered up.</p>
+
+<p><strong>Key host discovery options:</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-sn</code></td>
+<td>Ping scan only, without a port scan. Useful for quickly mapping live hosts.</td>
+</tr>
+<tr>
+<td><code>-Pn</code></td>
+<td>Skips host discovery and treats all targets as online. Useful when ICMP is blocked but you still want to scan.</td>
+</tr>
+<tr>
+<td><code>-PS&lt;port&gt;</code></td>
+<td>TCP SYN ping to a specific port. For example, <code>-PS22,80,443</code> sends SYN packets to those ports.</td>
+</tr>
+<tr>
+<td><code>-PE</code></td>
+<td>ICMP echo ping, the classic ping.</td>
+</tr>
+<tr>
+<td><code>-PR</code></td>
+<td>ARP scan. This is the default on local Ethernet networks and is a fast, reliable method for discovering local hosts.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>7.3.2 Port Scanning Techniques</h4>
+
+<p>Once hosts are identified, Nmap scans their ports to determine which services are listening.</p>
+
+<h4>TCP SYN Scan (-sS)</h4>
+
+<p>The default and most popular scan. Nmap sends a SYN packet as if initiating a connection. If the port is open, the target responds with SYN-ACK. If closed, it responds with RST. Nmap never completes the handshake, making this a half-open scan. It is fast and relatively stealthy. It requires root or administrator privileges.</p>
+
+<h4>TCP Connect Scan (-sT)</h4>
+
+<p>Completes the full TCP handshake. Used when SYN scan is not available, such as when running as an unprivileged user. It is more likely to be logged by the target's application, but it is functional.</p>
+
+<h4>UDP Scan (-sU)</h4>
+
+<p>Scans UDP ports. UDP is connectionless, so Nmap sends a UDP packet and waits for a response. Open ports may reply with data. Closed ports typically return an ICMP port unreachable message.</p>
+
+<p>UDP scanning is extremely slow because many hosts rate-limit ICMP error messages. A full 65,535-port UDP scan can take 18 hours or more. In practice, scan only the UDP ports that matter, such as DNS 53, SNMP 161, and NTP 123.</p>
+
+<p><strong>Port states Nmap reports:</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open</td>
+<td>A service is listening.</td>
+</tr>
+<tr>
+<td>Closed</td>
+<td>No service is listening, but the host is reachable.</td>
+</tr>
+<tr>
+<td>Filtered</td>
+<td>A firewall or filter is blocking the probe. Nmap cannot determine whether the port is open.</td>
+</tr>
+<tr>
+<td>Open|filtered</td>
+<td>Ambiguous state, common in UDP scans.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>7.3.3 Service and Version Detection</h4>
+
+<p>Knowing a port is open is not enough. You need to know what software and version is running.</p>
+
+<p>Nmap's <code>-sV</code> flag connects to open ports and analyzes responses to identify the service and version. For example, it may report "Apache httpd 2.4.49" instead of simply reporting that port 80 is open.</p>
+
+<p>Version detection is critical because vulnerabilities are version-specific. Apache 2.4.49 is vulnerable to CVE-2021-41773, a path traversal vulnerability. Apache 2.4.50 is vulnerable to a bypass of that fix. Knowing the exact version tells you which vulnerabilities are worth investigating.</p>
+
+<p><code>-sV</code> has intensity levels from 0 to 9 using <code>--version-intensity</code>. Higher intensity sends more probes and is more accurate but slower.</p>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Intensity</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--version-light</code></td>
+<td>2</td>
+<td>Uses fewer probes.</td>
+</tr>
+<tr>
+<td>Default</td>
+<td>7</td>
+<td>Balances detection and speed.</td>
+</tr>
+<tr>
+<td><code>--version-all</code></td>
+<td>9</td>
+<td>Uses all available version probes.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>7.3.4 OS Fingerprinting</h4>
+
+<p>Nmap's <code>-O</code> flag attempts to identify the target's operating system by sending TCP and UDP probes and analyzing subtle differences in how operating system TCP/IP stacks respond.</p>
+
+<p>Nmap compares the responses against a database of over 2,600 fingerprints.</p>
+
+<p>OS detection is most accurate when Nmap finds at least one open and one closed port. <code>--osscan-limit</code> skips OS detection for hosts that do not meet this criterion, saving time.</p>
+
+<p><code>-A</code> is a convenience flag that enables OS detection, version detection, script scanning, and traceroute in one command.</p>
+
+<h4>7.3.5 Timing and Performance</h4>
+
+<p>Scanning speed affects both accuracy and stealth.</p>
+
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Name</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-T0</code></td>
+<td>Paranoid</td>
+<td>Very slow scanning, with long delays between packets.</td>
+</tr>
+<tr>
+<td><code>-T1</code></td>
+<td>Sneaky</td>
+<td>Slow scanning with longer delays.</td>
+</tr>
+<tr>
+<td><code>-T2</code></td>
+<td>Polite</td>
+<td>Slower scanning that reduces network load.</td>
+</tr>
+<tr>
+<td><code>-T3</code></td>
+<td>Normal</td>
+<td>Default timing template.</td>
+</tr>
+<tr>
+<td><code>-T4</code></td>
+<td>Aggressive</td>
+<td>Faster scanning, assumes a reliable network.</td>
+</tr>
+<tr>
+<td><code>-T5</code></td>
+<td>Insane</td>
+<td>Fastest scanning, but may miss results.</td>
+</tr>
+</tbody>
+</table>
+
+<p>For lab work and most authorized testing, <code>-T4</code> is the practical default. Slower templates can be used in controlled testing when scan timing is part of the assessment. Do not use timing options to evade monitoring or bypass authorization.</p>
+
+<h4>7.3.6 Output Formats</h4>
+
+<p>Always save your scan results. Nmap supports several output formats:</p>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Output</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-oN</code></td>
+<td>Normal text output</td>
+<td>Human-readable scan results.</td>
+</tr>
+<tr>
+<td><code>-oX</code></td>
+<td>XML output</td>
+<td>Useful for parsing and reporting pipelines.</td>
+</tr>
+<tr>
+<td><code>-oG</code></td>
+<td>Grepable output</td>
+<td>Legacy format, now deprecated.</td>
+</tr>
+<tr>
+<td><code>-oA &lt;basename&gt;</code></td>
+<td>All three formats</td>
+<td>Saves normal, XML, and grepable output.</td>
+</tr>
+</tbody>
+</table>
+
+<p>XML output is particularly valuable because it can be compared between scans using <code>ndiff scan1.xml scan2.xml</code> to see exactly what changed, such as a new port opening, a service version updating, or a host disappearing.</p>
+
+<h4>7.3.7 The Nmap Scripting Engine (NSE)</h4>
+
+<p>NSE extends Nmap with Lua scripts that automate tasks such as vulnerability detection, service discovery, and authentication testing.</p>
+
+<p>Scripts are categorized as safe, intrusive, vuln, exploit, discovery, auth, default, and others.</p>
+
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-sC</code></td>
+<td>Runs the default script set, equivalent to <code>--script=default</code>.</td>
+</tr>
+<tr>
+<td><code>--script=vuln</code></td>
+<td>Runs vulnerability detection scripts.</td>
+</tr>
+<tr>
+<td><code>--script=http-title</code></td>
+<td>Retrieves the title of web pages on open HTTP ports.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Important:</strong> NSE scripts are not sandboxed. Some scripts can crash services or exploit vulnerabilities. Only run intrusive or exploit-category scripts against systems you own or have explicit permission to test.
+</div>
+
+<hr>
+
+<h3>7.4 A Practical Recon Workflow</h3>
+
+<p>A structured workflow prevents you from drowning in data. For an external engagement, a common sequence is:</p>
+
+<h4>Phase 1: Passive Reconnaissance</h4>
+<p><strong>No direct contact with the target's systems.</strong></p>
+
+<ol>
+<li>WHOIS lookup on the primary domain.</li>
+<li>Certificate Transparency log search for subdomains.</li>
+<li>Google dorking for exposed files, login pages, and directory listings.</li>
+<li>Shodan/Censys search on identified IP ranges.</li>
+<li>Breach database check for corporate email addresses.</li>
+</ol>
+
+<h4>Phase 2: Light Active Reconnaissance</h4>
+<p><strong>Minimal target contact.</strong></p>
+
+<ol start="6">
+<li>DNS enumeration using A, MX, TXT, and NS records.</li>
+<li>Subdomain resolution checks against a wordlist.</li>
+</ol>
+
+<h4>Phase 3: Active Scanning</h4>
+<p><strong>Requires explicit permission.</strong></p>
+
+<ol start="8">
+<li>Nmap host discovery on identified IP ranges using <code>-sn</code>.</li>
+<li>Port scan on live hosts using <code>-sS -T4</code>.</li>
+<li>Service and version detection on open ports using <code>-sV</code>.</li>
+<li>OS fingerprinting on promising targets using <code>-O</code>.</li>
+<li>Targeted NSE scripts, such as <code>http-title</code> and <code>ssl-cert</code>, on discovered services.</li>
+</ol>
+
+<h4>Phase 4: Documentation</h4>
+
+<p>Record every finding, including IP address, port, service, version, and any anomalies. This becomes the foundation for the vulnerability analysis and exploitation phases.</p>
+
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IP address</td>
+<td>192.168.1.10</td>
+</tr>
+<tr>
+<td>Port</td>
+<td>443</td>
+</tr>
+<tr>
+<td>Service</td>
+<td>HTTPS</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>Web server version identified by Nmap</td>
+</tr>
+<tr>
+<td>Observation</td>
+<td>Unexpected service or unusual configuration</td>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<h3>Chapter 7 Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reconnaissance Mindset</td>
+<td>Passive means no direct target contact and is harder to detect. Active means direct probes, which are more reliable but logged. Legal permission is mandatory for active scanning.</td>
+</tr>
+<tr>
+<td>OSINT</td>
+<td>WHOIS, CT logs, Google dorking, Shodan, and breach databases reveal attack surfaces without directly touching the target.</td>
+</tr>
+<tr>
+<td>Host Discovery</td>
+<td>Nmap <code>-sn</code> finds live hosts. ARP is the default on local networks. <code>-Pn</code> skips discovery when ICMP is blocked.</td>
+</tr>
+<tr>
+<td>Port Scanning</td>
+<td><code>-sS</code> is the SYN scan. <code>-sU</code> scans UDP services but is slow. Understand open, closed, and filtered states.</td>
+</tr>
+<tr>
+<td>Version Detection</td>
+<td><code>-sV</code> identifies software and versions, which are critical for mapping vulnerabilities.</td>
+</tr>
+<tr>
+<td>OS Fingerprinting</td>
+<td><code>-O</code> analyzes TCP/IP stack behavior to estimate the operating system.</td>
+</tr>
+<tr>
+<td>Timing</td>
+<td><code>-T4</code> is a practical choice for authorized lab scanning. Slower templates reduce scan speed.</td>
+</tr>
+<tr>
+<td>NSE</td>
+<td>Extends Nmap with scripts for vulnerability detection, discovery, and other tasks. Use responsibly.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Next chapter preview:</strong> Chapter 8 moves from scanning to exploitation. You will learn how to take the information gathered in reconnaissance, including open ports, service versions, and OS details, and use the Metasploit Framework to exploit known vulnerabilities in a controlled lab environment. This is where you transition from "what is there" to "what can I do with it."
+</div>
+
+<hr>
+
+<div class="exercise">
+
+<h3>Chapter 7 Exercises</h3>
+
+<p><strong>Estimated completion time:</strong> 8–10 hours.</p>
+
+<h4>Exercise 1: Google Dorking Practice</h4>
+
+<p>Run the following searches against a domain you own or have permission to test, or use a deliberately vulnerable training site such as testphp.vulnweb.com:</p>
+
+<pre><code>site:target.com filetype:pdf
+site:target.com intitle:"index of"
+site:target.com inurl:admin</code></pre>
+
+<p>Document what you find and what it reveals about the target's attack surface.</p>
+
+<h4>Exercise 2: Nmap Host Discovery</h4>
+
+<p>On your local network or in a lab environment, run:</p>
+
+<pre><code>nmap -sn 192.168.1.0/24</code></pre>
+
+<p>Adjust the subnet to match your lab network. How many hosts are live?</p>
+
+<p>Then run:</p>
+
+<pre><code>nmap -sn -Pn 192.168.1.0/24</code></pre>
+
+<p>Compare the results. What does the difference tell you?</p>
+
+<h4>Exercise 3: Port Scan Interpretation</h4>
+
+<p>Run the following against a lab machine you are authorized to test:</p>
+
+<pre><code>nmap -sS -p 22,80,443,3389 -T4 &lt;target&gt;</code></pre>
+
+<p>Record the state of each port. Then re-run with <code>--reason</code> and write down the evidence Nmap used for each port state, such as SYN-ACK, RST, or no response.</p>
+
+<h4>Exercise 4: Service and Version Detection</h4>
+
+<p>Run the following against a lab machine with web services:</p>
+
+<pre><code>nmap -sV -T4 &lt;target&gt;</code></pre>
+
+<p>Identify the exact software and version. Search for that version in a vulnerability database, such as NVD, and determine whether any known CVEs apply.</p>
+
+<h4>Exercise 5: TryHackMe</h4>
+
+<p>Complete the Nmap room for beginners and, if you have time, the Further Nmap room.</p>
+
+<p>Document at least three new flags or techniques you learned that were not covered in this chapter.</p>
+
+</div>
+
+</section>
+<!-- END CHAPTER 7 -->
+<!-- CHAPTER 8: EXPLOITATION FUNDAMENTALS -->
+<section class="chapter">
+
+<h2>Chapter 8: Exploitation Fundamentals</h2>
+
+<p>Chapter 7 taught you how to find the doors. This chapter teaches you how to open them. Exploitation is the phase where reconnaissance and scanning pay off. You take the open ports, service versions, and OS fingerprints you discovered and use them to gain access to a target system.</p>
+
+<p>In ethical hacking and penetration testing, this is done with explicit written permission, in controlled environments, and with a clear objective: prove that a vulnerability is exploitable so it can be fixed.</p>
+
+<p>This chapter focuses on the Metasploit Framework, the industry-standard exploitation platform. You will learn its architecture, its workflow, and how to use it responsibly in a lab environment. The goal is not to become a push-button exploiter who runs modules without understanding them. The goal is to understand what exploitation actually does, why it works, and what happens after you get a shell.</p>
+
+<hr>
+
+<h3>8.1 The Exploitation Mindset</h3>
+
+<p>Exploitation is not magic. It is the logical consequence of a vulnerability. Every exploit does one of three things:</p>
+
+<ul>
+<li><strong>Executes arbitrary code:</strong> A buffer overflow in a service allows an attacker to overwrite memory and redirect execution to their own payload. The exploit delivers the payload. The payload is what actually does something useful.</li>
+<li><strong>Bypasses authentication:</strong> A default credential, a hardcoded backdoor, or an authentication bypass vulnerability lets an attacker in without knowing a valid password.</li>
+<li><strong>Escalates privileges:</strong> An exploit takes a low-privilege foothold and turns it into administrative or SYSTEM-level access.</li>
+</ul>
+
+<p>The ethical hacker's objective is not to cause damage. It is to demonstrate impact.</p>
+
+<p>A penetration test report that says "port 21 is open and running vsftpd 2.3.4" is a finding. A report that says "port 21 is open, running vsftpd 2.3.4, and I obtained a root shell in 30 seconds" demonstrates a business risk that needs to be fixed.</p>
+
+<div class="tip">
+<strong>Legal and ethical boundary:</strong> Only exploit systems you own or have explicit, written authorization to test. Unauthorized exploitation is a crime in virtually every jurisdiction.
+</div>
+
+<hr>
+
+<h3>8.2 The Metasploit Framework: Architecture</h3>
+
+<h4>8.2.1 What Metasploit Is</h4>
+
+<p>Metasploit is a modular exploitation framework. It does not contain a single monolithic hack button. It is a collection of modules, which are pre-written pieces of code that perform specific tasks.</p>
+
+<p>The open-source Metasploit Framework runs on the command line through <code>msfconsole</code>. A commercial version, Metasploit Pro, adds a graphical interface and automation features. The Framework is what you will use in labs and many professional engagements.</p>
+
+<h4>8.2.2 Module Types</h4>
+
+<table>
+<thead>
+<tr>
+<th>Module Type</th>
+<th>Purpose</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auxiliary</td>
+<td>Scanning, enumeration, and service discovery. Does not directly exploit a vulnerability.</td>
+<td><code>auxiliary/scanner/http/title</code></td>
+</tr>
+<tr>
+<td>Exploit</td>
+<td>Takes advantage of a vulnerability to execute code or trigger an unintended action.</td>
+<td><code>exploit/unix/ftp/vsftpd_234_backdoor</code></td>
+</tr>
+<tr>
+<td>Payload</td>
+<td>Code that runs on the target after exploitation.</td>
+<td><code>cmd/unix/interact</code></td>
+</tr>
+<tr>
+<td>Post</td>
+<td>Post-exploitation actions on an established session.</td>
+<td><code>post/linux/gather/enum_system</code></td>
+</tr>
+<tr>
+<td>Encoder</td>
+<td>Transforms payload data to meet specific encoding or character constraints.</td>
+<td><code>x86/shikata_ga_nai</code></td>
+</tr>
+</tbody>
+</table>
+
+<h4>8.2.3 The msfconsole Interface</h4>
+
+<p><code>msfconsole</code> is the primary interface. When you launch it, you are in the root context:</p>
+
+<pre><code>msf6 &gt;</code></pre>
+
+<p>When you select a module, the prompt changes to reflect the module context:</p>
+
+<pre><code>msf6 exploit(...) &gt;</code></pre>
+
+<p>This context is important. Commands such as <code>set</code> and <code>run</code> operate on the currently selected module.</p>
+
+<hr>
+
+<h3>8.3 The Five-Step Exploitation Workflow</h3>
+
+<p>Every Metasploit exploit module follows a similar pattern. Learn this workflow once, and you can apply it to different modules in an authorized lab.</p>
+
+<h4>Step 1: Select the Module</h4>
+
+<p>Use the <code>search</code> command to find a module. You can search by name, CVE, platform, or type.</p>
+
+<pre><code>msf6 &gt; search vsftpd</code></pre>
+
+<p>Results show the module path, disclosure date, rank, and whether the module supports vulnerability checking.</p>
+
+<p>Once you identify the module, select it with <code>use</code>:</p>
+
+<pre><code>msf6 &gt; use exploit/unix/ftp/vsftpd_234_backdoor</code></pre>
+
+<p>The prompt changes to show that you are inside the module context.</p>
+
+<h4>Step 2: Inspect the Options</h4>
+
+<p>Never guess option names. Always run <code>show options</code> first.</p>
+
+<pre><code>msf6 exploit(unix/ftp/vsftpd_234_backdoor) &gt; show options</code></pre>
+
+<p>Common options include:</p>
+
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RHOSTS</code></td>
+<td>Target IP address or range.</td>
+</tr>
+<tr>
+<td><code>RPORT</code></td>
+<td>Target port, often pre-filled.</td>
+</tr>
+<tr>
+<td><code>LHOST</code></td>
+<td>Your IP address for reverse payload connections.</td>
+</tr>
+<tr>
+<td><code>LPORT</code></td>
+<td>Your listening port for reverse payload connections.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>Step 3: Configure the Options</h4>
+
+<p>Set the required options using <code>set</code>. Use only the IP address of your authorized lab target.</p>
+
+<pre><code>set RHOSTS &lt;LAB_TARGET_IP&gt;</code></pre>
+
+<p>Use <code>setg</code> to set a value globally across modules. This can be useful for a setting such as LHOST that rarely changes during an engagement.</p>
+
+<p>Use <code>unset</code> or <code>unset all</code> to clear values.</p>
+
+<h4>Step 4: Verify, If Supported</h4>
+
+<p>Many modules support the <code>check</code> command. This tests whether a target appears vulnerable without performing the full exploitation attempt.</p>
+
+<pre><code>check</code></pre>
+
+<p>If the module reports that the target is vulnerable, you have evidence to support the next testing step. If it reports that the target is not exploitable, you can avoid an unnecessary exploitation attempt.</p>
+
+<h4>Step 5: Run the Exploit</h4>
+
+<p>In an authorized lab, the <code>run</code> command starts the selected module.</p>
+
+<pre><code>run</code></pre>
+
+<p><code>run</code> and <code>exploit</code> are equivalent commands in this context. If the test succeeds, Metasploit reports that a session has opened. If it fails, inspect the error. Common causes include an incorrect target, a service that is not vulnerable, or a blocked connection.</p>
+
+<div class="tip">
+<strong>Workflow rule:</strong> Search, select, inspect, configure, verify, and execute only within your authorized lab scope.
+</div>
+
+<hr>
+
+<h3>8.4 Payloads: What Happens After the Exploit Lands</h3>
+
+<p>The exploit is the delivery mechanism. The payload is what runs on the target after the vulnerability is triggered.</p>
+
+<h4>8.4.1 Bind Shell vs. Reverse Shell</h4>
+
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>How It Works</th>
+<th>Network Consideration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bind shell</td>
+<td>The target opens a listening port, and the tester connects to it.</td>
+<td>Requires inbound connections to the target to be permitted.</td>
+</tr>
+<tr>
+<td>Reverse shell</td>
+<td>The target connects out to a listener operated by the tester.</td>
+<td>Outbound connections may be less restricted than unsolicited inbound connections.</td>
+</tr>
+</tbody>
+</table>
+
+<p>A bind shell works only if the target's firewall allows inbound connections on the chosen port. A reverse shell connects back to a listener. Corporate networks often allow outbound traffic on common ports such as 80 and 443 while blocking unsolicited inbound connections.</p>
+
+<p>Reverse shells are common in controlled testing because of these network conditions. They still require explicit authorization and appropriate network controls.</p>
+
+<h4>8.4.2 Staged vs. Stageless Payloads</h4>
+
+<p>Metasploit payload names can indicate their type:</p>
+
+<table>
+<thead>
+<tr>
+<th>Payload Naming Pattern</th>
+<th>Type</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shell_reverse_tcp</code></td>
+<td>Stageless</td>
+<td>The complete payload is sent at once. It is larger but self-contained.</td>
+</tr>
+<tr>
+<td><code>shell/reverse_tcp</code></td>
+<td>Staged</td>
+<td>A small stager establishes a connection, then receives the larger stage.</td>
+</tr>
+<tr>
+<td><code>meterpreter_reverse_tcp</code></td>
+<td>Stageless</td>
+<td>The complete Meterpreter payload is delivered at once.</td>
+</tr>
+<tr>
+<td><code>meterpreter/reverse_tcp</code></td>
+<td>Staged</td>
+<td>A stager establishes the connection before receiving the Meterpreter stage.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>8.4.3 Meterpreter</h4>
+
+<p>Meterpreter is Metasploit's advanced payload. It provides an interactive environment with post-exploitation capabilities, including system information gathering, process inspection, file transfer, and other administrative operations.</p>
+
+<p>Meterpreter can operate primarily in memory, but its behavior can still be detected by modern endpoint detection and response (EDR) solutions.</p>
+
+<p>Common Meterpreter commands include:</p>
+
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sysinfo</code></td>
+<td>Displays system information, including OS, hostname, and architecture.</td>
+</tr>
+<tr>
+<td><code>getuid</code></td>
+<td>Displays the user account associated with the session.</td>
+</tr>
+<tr>
+<td><code>ps</code></td>
+<td>Lists running processes.</td>
+</tr>
+<tr>
+<td><code>migrate &lt;PID&gt;</code></td>
+<td>Moves the Meterpreter session into another process.</td>
+</tr>
+<tr>
+<td><code>hashdump</code></td>
+<td>Attempts to retrieve Windows password hashes, subject to privileges and system protections.</td>
+</tr>
+<tr>
+<td><code>upload</code> / <code>download</code></td>
+<td>Transfers files between systems.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Security relevance:</strong> Meterpreter is powerful, but its behavior can generate security alerts. Defenders use EDR telemetry to investigate suspicious process activity, memory operations, and network connections.
+</div>
+
+<h4>8.4.4 The Multi/Handler</h4>
+
+<p>In an authorized lab, a reverse payload requires a listener. Metasploit provides <code>exploit/multi/handler</code> as a general-purpose handler.</p>
+
+<p>Its configuration depends on the payload and the lab network. The handler waits for a connection and creates a session when a compatible payload connects.</p>
+
+<pre><code>msf6 &gt; use exploit/multi/handler
+msf6 exploit(multi/handler) &gt; show options
+msf6 exploit(multi/handler) &gt; show payloads</code></pre>
+
+<hr>
+
+<h3>8.5 A Complete Example: Understanding vsftpd 2.3.4</h3>
+
+<p>This is a classic beginner exploitation lab. The vsftpd 2.3.4 service distributed in a compromised release contained a backdoor. When a specially crafted username ending in <code>:)</code> was sent, the service could open a shell on port 6200.</p>
+
+<p>Use this example only in an isolated training environment, such as a deliberately vulnerable virtual machine that you own.</p>
+
+<h4>8.5.1 Reconnaissance</h4>
+
+<p>From Chapter 7, you know how to identify the service and its version. In your isolated lab, Nmap can inspect the FTP service:</p>
+
+<pre><code>nmap -sV -p 21 &lt;LAB_TARGET_IP&gt;</code></pre>
+
+<h4>8.5.2 Understanding the Metasploit Module</h4>
+
+<p>The Metasploit module is named:</p>
+
+<pre><code>exploit/unix/ftp/vsftpd_234_backdoor</code></pre>
+
+<p>Before any testing, inspect the module documentation and its options. Confirm that the lab machine is the intended target and that the test is within scope.</p>
+
+<h4>8.5.3 Understanding the Vulnerability</h4>
+
+<p>The backdoor was part of a compromised vsftpd distribution. The important lesson is that a trusted software package can become dangerous when its source or distribution process is compromised.</p>
+
+<p>This example connects exploitation to the software supply chain risks covered in Chapter 6.</p>
+
+<div class="tip">
+<strong>Learning objective:</strong> Understand how reconnaissance identifies a vulnerable service, how an exploit module represents a known weakness, and how a successful test demonstrates security impact.
+</div>
+
+<hr>
+
+<h3>8.6 msfvenom: Understanding Payload Generation</h3>
+
+<p><code>msfvenom</code> is a command-line tool for generating payloads in different formats, such as EXE, ELF, and PHP. Security professionals study it to understand how payloads are packaged and how defensive tools identify suspicious files.</p>
+
+<p>Its general syntax is:</p>
+
+<pre><code>msfvenom -p &lt;payload&gt; [options] -f &lt;format&gt;</code></pre>
+
+<p>Common output formats include:</p>
+
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>exe</code></td>
+<td>Windows executable format.</td>
+</tr>
+<tr>
+<td><code>elf</code></td>
+<td>Linux executable format.</td>
+</tr>
+<tr>
+<td><code>php</code></td>
+<td>PHP script format.</td>
+</tr>
+<tr>
+<td><code>raw</code></td>
+<td>Raw payload data.</td>
+</tr>
+</tbody>
+</table>
+
+<p>Encoding using <code>-e</code> was historically used to avoid simple antivirus signatures. Modern antivirus and EDR solutions also rely on behavioral detection, so encoding alone is not sufficient to evade detection.</p>
+
+<p>The <code>-b</code> option identifies bad characters that may break a payload in specific exploit contexts.</p>
+
+<div class="tip">
+<strong>Defensive learning:</strong> Study payload formats in a controlled lab. Focus on file analysis, detection rules, and understanding why endpoint protection flags suspicious behavior.
+</div>
+
+<hr>
+
+<h3>8.7 Session Management</h3>
+
+<p>After successful exploitation in a lab, Metasploit may have multiple sessions open. Session management helps testers keep track of established connections.</p>
+
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sessions</code></td>
+<td>Lists active sessions and their details.</td>
+</tr>
+<tr>
+<td><code>sessions -i &lt;id&gt;</code></td>
+<td>Interacts with a selected session.</td>
+</tr>
+<tr>
+<td><code>background</code></td>
+<td>Backgrounds the current session and returns to msfconsole.</td>
+</tr>
+<tr>
+<td><code>Ctrl+Z</code></td>
+<td>Can background an interactive session.</td>
+</tr>
+<tr>
+<td><code>sessions -k &lt;id&gt;</code></td>
+<td>Terminates a selected session.</td>
+</tr>
+</tbody>
+</table>
+
+<p>Session management is important for documenting testing activity and ensuring that lab sessions are closed when the exercise ends.</p>
+
+<hr>
+
+<h3>8.8 Exploitation Ethics and Reporting</h3>
+
+<h4>8.8.1 Scope and Authorization</h4>
+
+<p>Exploitation without authorization is a crime. Before any exploitation activity, you must have:</p>
+
+<ul>
+<li><strong>Written authorization:</strong> Permission from the system owner.</li>
+<li><strong>Defined scope:</strong> A list of IP addresses, domains, and systems that are in scope.</li>
+<li><strong>Rules of engagement:</strong> Clear limits on what is and is not allowed, such as no denial-of-service, no data exfiltration, and an agreed testing window.</li>
+</ul>
+
+<p>Violating scope, even accidentally, can end a career and result in legal action.</p>
+
+<h4>8.8.2 The Report</h4>
+
+<p>A penetration test is worthless if the findings are not communicated clearly. A professional report includes:</p>
+
+<table>
+<thead>
+<tr>
+<th>Report Section</th>
+<th>What It Contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Executive summary</td>
+<td>What was tested, what was found, and what it means for the business. Written for non-technical stakeholders.</td>
+</tr>
+<tr>
+<td>Technical findings</td>
+<td>Each vulnerability, with evidence such as screenshots or command output, severity rating, and remediation guidance.</td>
+</tr>
+<tr>
+<td>Remediation priorities</td>
+<td>Which findings should be fixed first, based on risk and effort.</td>
+</tr>
+</tbody>
+</table>
+
+<p>The goal is not to embarrass the client or show off your skills. The goal is to help them fix real problems.</p>
+
+<hr>
+
+<h3>Chapter 8 Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exploitation Mindset</td>
+<td>Exploits execute code, bypass authentication, or escalate privileges. The goal is proof of impact, not damage.</td>
+</tr>
+<tr>
+<td>Metasploit Architecture</td>
+<td>Modules include auxiliary for scanning, exploit for exploiting vulnerabilities, payload for target-side actions, and post for activity after access. msfconsole is the interface.</td>
+</tr>
+<tr>
+<td>Five-Step Workflow</td>
+<td>Search, select, show options, set options, then check or run. Never guess option names.</td>
+</tr>
+<tr>
+<td>Payloads</td>
+<td>Reverse shells establish outbound connections. Staged and stageless payloads differ in delivery. Meterpreter provides advanced session capabilities.</td>
+</tr>
+<tr>
+<td>vsftpd Example</td>
+<td>A compromised service distribution contained a backdoor. The example demonstrates how a known service weakness can lead to system compromise.</td>
+</tr>
+<tr>
+<td>msfvenom</td>
+<td>Generates payloads in specific formats. Encoding alone is not sufficient against modern endpoint protection.</td>
+</tr>
+<tr>
+<td>Ethics</td>
+<td>Written authorization and defined scope are mandatory. A professional report communicates evidence, risk, and remediation.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Next chapter preview:</strong> Chapter 9 moves from network services to web applications. You will learn how SQL injection, cross-site scripting, and other web vulnerabilities work, and how to test them using Burp Suite and PortSwigger's Web Security Academy, a major platform for hands-on web security training.
+</div>
+
+<hr>
+
+<div class="exercise">
+
+<h3>Chapter 8 Exercises</h3>
+
+<p><strong>Estimated completion time:</strong> 8–10 hours.</p>
+
+<h4>Exercise 1: Metasploit Workflow Drill</h4>
+
+<p>On a Metasploitable 2 virtual machine or an authorized TryHackMe lab, study the vsftpd exploitation example from Section 8.5.</p>
+
+<p>Document:</p>
+
+<ul>
+<li>The commands you used.</li>
+<li>The purpose of the module options.</li>
+<li>What the vulnerability check tells you.</li>
+<li>What evidence would demonstrate successful exploitation.</li>
+</ul>
+
+<h4>Exercise 2: Manual vs. Metasploit Comparison</h4>
+
+<p>Compare the manual vsftpd backdoor explanation with the Metasploit module.</p>
+
+<p>Write a paragraph explaining what the Metasploit module automates that a manual test does not, including automation, payload handling, and session management.</p>
+
+<h4>Exercise 3: Payload Analysis</h4>
+
+<p>Study the difference between staged and stageless payloads. Explain the differences between bind shells and reverse shells.</p>
+
+<p>Write a short explanation of why network filtering and firewall rules affect which connection model works in a lab.</p>
+
+<h4>Exercise 4: Penetration Testing Report</h4>
+
+<p>Create a sample report for a fictional vulnerable lab machine.</p>
+
+<p>Include:</p>
+
+<ul>
+<li>Target identification.</li>
+<li>Vulnerability description.</li>
+<li>Evidence collected.</li>
+<li>Risk and impact.</li>
+<li>Recommended remediation.</li>
+</ul>
+
+<h4>Exercise 5: TryHackMe</h4>
+
+<p>Complete the Metasploit: Introduction and Metasploit: Exploitation rooms.</p>
+
+<p>Document at least three new commands or concepts you learned that were not covered in this chapter.</p>
+
+</div>
+
+</section>
+<!-- END CHAPTER 8 -->
+<!-- CHAPTER 9: WEB APPLICATION HACKING -->
+<section class="chapter">
+
+<h2>Chapter 9: Web Application Hacking</h2>
+
+<p>
+Chapter 8 taught you how to exploit network services. This chapter moves up the stack to the application layer, the part of the attack surface most exposed to users. Web applications introduce risks through their inputs, authentication systems, databases, and client-side code.
+</p>
+
+<p>
+The OWASP Top 10 provides a reference for common web application security risks. Burp Suite provides tools for inspecting and testing HTTP traffic. This chapter covers SQL injection, cross-site scripting (XSS), and a structured web application testing workflow.
+</p>
+
+<hr>
+
+<h3>9.1 The OWASP Top 10 (2025 Edition)</h3>
+
+<p>
+The OWASP Top 10 is a data-informed list of critical web application security risks.
+</p>
+
+<h4>9.1.1 What Changed in 2025</h4>
+
+<ul>
+<li>Server-Side Request Forgery (SSRF) is now included under Broken Access Control (A01).</li>
+<li>Vulnerable and Outdated Components expanded into Software Supply Chain Failures (A03).</li>
+<li>Mishandling of Exceptional Conditions (A10) is a new category covering error handling failures, logic errors, and failing-open scenarios.</li>
+</ul>
+
+<h4>9.1.2 The 2025 Top 10 at a Glance</h4>
+
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Category</th>
+<th>Core Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>A01</td><td>Broken Access Control</td><td>Users act outside their intended permissions.</td></tr>
+<tr><td>A02</td><td>Security Misconfiguration</td><td>Default accounts, unnecessary features, and verbose errors.</td></tr>
+<tr><td>A03</td><td>Software Supply Chain Failures</td><td>Compromised dependencies, build tools, and update delivery.</td></tr>
+<tr><td>A04</td><td>Cryptographic Failures</td><td>Sensitive data exposed through weak or missing encryption.</td></tr>
+<tr><td>A05</td><td>Injection</td><td>Untrusted input interpreted as code or commands.</td></tr>
+<tr><td>A06</td><td>Insecure Design</td><td>Missing threat modeling and secure design patterns.</td></tr>
+<tr><td>A07</td><td>Authentication Failures</td><td>Weak passwords, missing MFA, and session flaws.</td></tr>
+<tr><td>A08</td><td>Software or Data Integrity Failures</td><td>Failure to verify the integrity of code and data.</td></tr>
+<tr><td>A09</td><td>Logging &amp; Alerting Failures</td><td>Security events are not detected or acted upon.</td></tr>
+<tr><td>A10</td><td>Mishandling of Exceptional Conditions</td><td>Improper error handling and failing-open scenarios.</td></tr>
+</tbody>
+</table>
+
+<h4>Why Injection Matters</h4>
+
+<p>
+Injection has appeared in OWASP security rankings for many years. It includes vulnerabilities such as SQL injection and XSS. These vulnerabilities can expose data, affect application behavior, or compromise users.
+</p>
+
+<div class="tip">
+<strong>Security principle:</strong> Treat every value received from a user as untrusted. Validate it and handle it safely before processing or displaying it.
+</div>
+
+<hr>
+
+<h3>9.2 Burp Suite: The Web Hacker's Workbench</h3>
+
+<p>
+Burp Suite is an intercepting proxy. It sits between your browser and a web application, allowing you to inspect HTTP requests and responses.
+</p>
+
+<h4>9.2.1 Core Burp Tools</h4>
+
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Proxy</td><td>Intercepts traffic between the browser and server.</td></tr>
+<tr><td>Repeater</td><td>Allows manual modification and resending of requests.</td></tr>
+<tr><td>Intruder</td><td>Automates requests with different test inputs.</td></tr>
+<tr><td>Scanner</td><td>Automated vulnerability detection, available in Burp Professional.</td></tr>
+<tr><td>Comparer</td><td>Highlights differences between two responses.</td></tr>
+</tbody>
+</table>
+
+<h4>9.2.2 The Testing Workflow</h4>
+
+<ol>
+<li>Capture a request in Proxy HTTP history.</li>
+<li>Send the request to Repeater.</li>
+<li>Change one parameter at a time.</li>
+<li>Observe how the application responds.</li>
+<li>Use Intruder for controlled automated testing.</li>
+<li>Compare responses to identify unusual behavior.</li>
+<li>Document the result and recommend a fix.</li>
+</ol>
+
+<p>
+Potential testing points include URL query parameters, POST body fields, cookies, and HTTP headers.
+</p>
+
+<div class="tip">
+<strong>Key principle:</strong> Test only applications you own or have explicit permission to assess. Use isolated training labs for vulnerability exercises.
+</div>
+
+<hr>
+
+<h3>9.3 SQL Injection: Talking Directly to the Database</h3>
+
+<h4>9.3.1 What SQL Injection Is</h4>
+
+<p>
+SQL injection occurs when an application inserts untrusted user input directly into a database query. The input can change the intended meaning of the SQL statement.
+</p>
+
+<p>Example of a normal SQL query:</p>
+
+<pre><code>SELECT * FROM products
+WHERE category = 'Gifts';</code></pre>
+
+<p>
+If an application builds this query by directly concatenating user input, an attacker may alter its logic.
+</p>
+
+<p>Conceptual example of an unsafe input:</p>
+
+<pre><code>' OR 1=1--</code></pre>
+
+<p>
+The condition <code>1=1</code> is always true. In a vulnerable query, this can cause the database to return records outside the intended category.
+</p>
+
+<h4>9.3.2 Types of SQL Injection</h4>
+
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>In-band SQLi</td><td>Results appear directly in the application's response.</td></tr>
+<tr><td>Error-based SQLi</td><td>Database errors reveal information about query processing.</td></tr>
+<tr><td>UNION-based SQLi</td><td>Uses SQL UNION behavior to combine query results.</td></tr>
+<tr><td>Boolean-based blind SQLi</td><td>Information is inferred by comparing true and false responses.</td></tr>
+<tr><td>Time-based blind SQLi</td><td>Information is inferred from differences in response time.</td></tr>
+</tbody>
+</table>
+
+<h4>9.3.3 Testing with Burp Intruder</h4>
+
+<p>In an authorized training environment:</p>
+
+<ol>
+<li>Identify a request containing a parameter, such as <code>category=Gifts</code>.</li>
+<li>Send the request to Intruder.</li>
+<li>Identify the parameter you want to test.</li>
+<li>Load a controlled list of harmless SQL test inputs.</li>
+<li>Run the test against your lab application.</li>
+<li>Compare response status, length, content, and timing.</li>
+</ol>
+
+<p>
+Look for unexpected changes in returned records, database errors, or response timing. A difference is an indication for further investigation, not automatic proof of SQL injection.
+</p>
+
+<h4>9.3.4 Manual Testing in Repeater</h4>
+
+<p>
+Repeater helps you understand how an application handles individual inputs. Start with harmless test values in your own lab.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What to Observe</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Normal input</td><td>Establish the expected response.</td></tr>
+<tr><td>Single quotation mark</td><td>Check whether the application produces a database error.</td></tr>
+<tr><td>Boolean test cases</td><td>Compare responses to controlled true and false conditions in a lab.</td></tr>
+<tr><td>Unexpected data types</td><td>Check whether the application validates input correctly.</td></tr>
+</tbody>
+</table>
+
+<p>
+Do not extract real user records or credentials. Use synthetic records in a deliberately vulnerable training database to understand query behavior.
+</p>
+
+<h4>9.3.5 SQL Injection Defense</h4>
+
+<ul>
+<li><strong>Parameterized queries:</strong> Separate SQL structure from user-supplied values.</li>
+<li><strong>Input validation:</strong> Enforce expected formats, such as numeric identifiers.</li>
+<li><strong>Least privilege:</strong> Give the application's database account only the permissions it needs.</li>
+<li><strong>Safe error handling:</strong> Avoid exposing database details to users.</li>
+<li><strong>Security testing:</strong> Test database interactions during development.</li>
+</ul>
+
+<p>Example of a safer Python query using SQLite:</p>
+
+<pre><code>cursor.execute(
+    "SELECT * FROM products WHERE category = ?",
+    (category,)
+)</code></pre>
+
+<div class="tip">
+<strong>Remember:</strong> Parameterized queries are the primary defense against SQL injection. Input validation adds another layer of protection.
+</div>
+
+<hr>
+
+<h3>9.4 Cross-Site Scripting (XSS): Attacking the User</h3>
+
+<h4>9.4.1 What XSS Is</h4>
+
+<p>
+Cross-Site Scripting occurs when an application handles untrusted data unsafely and causes attacker-controlled JavaScript to execute in another user's browser.
+</p>
+
+<p>Possible impacts include:</p>
+
+<ul>
+<li>Unauthorized actions performed through a victim's browser.</li>
+<li>Manipulation of page content.</li>
+<li>Phishing and credential deception.</li>
+<li>Exposure of information accessible to the injected script.</li>
+<li>Redirecting users to untrusted websites.</li>
+</ul>
+
+<h4>9.4.2 Types of XSS</h4>
+
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>How It Works</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Reflected XSS</td><td>Untrusted input from a request is immediately included in a response.</td></tr>
+<tr><td>Stored XSS</td><td>Untrusted input is saved and later displayed to users.</td></tr>
+<tr><td>DOM-based XSS</td><td>Client-side JavaScript processes untrusted data unsafely.</td></tr>
+</tbody>
+</table>
+
+<h4>9.4.3 Testing for Reflected XSS with Burp Repeater</h4>
+
+<p>
+Use a local training application that is deliberately vulnerable to XSS.
+</p>
+
+<ol>
+<li>Find a request where a search value appears in the response.</li>
+<li>Send the request to Repeater.</li>
+<li>Replace the normal test value with a harmless proof-of-concept input.</li>
+<li>Inspect the response to see whether the application encoded the input.</li>
+<li>Use the lab's browser-based verification method to determine whether execution occurs.</li>
+<li>Record the vulnerable output context and the recommended fix.</li>
+</ol>
+
+<p>Example harmless test input:</p>
+
+<pre><code>&lt;script&gt;alert(1)&lt;/script&gt;</code></pre>
+
+<p>
+If the application returns this input without suitable encoding, investigate whether the browser interprets it as executable markup. A reflected string alone does not prove that XSS is exploitable.
+</p>
+
+<h4>9.4.4 Understanding Filter Bypasses</h4>
+
+<p>
+Applications sometimes block specific HTML tags or attributes. A secure assessment should determine whether the application relies on weak blacklist filtering instead of context-aware output encoding.
+</p>
+
+<p>In an authorized lab, investigate:</p>
+
+<ul>
+<li>Whether HTML characters are encoded.</li>
+<li>Whether unsafe HTML elements are removed.</li>
+<li>Whether event-handler attributes are accepted.</li>
+<li>Whether user input reaches an HTML, JavaScript, URL, or CSS context.</li>
+<li>Whether the browser executes the resulting content.</li>
+</ul>
+
+<p>
+A successful HTTP 200 response does not prove that a tag or attribute is safe. Always inspect the response and verify behavior in the lab.
+</p>
+
+<h4>9.4.5 Understanding the Impact of XSS</h4>
+
+<p>
+XSS can expose information available to scripts running in the vulnerable page's origin. The impact depends on browser protections, cookie settings, application permissions, and the vulnerable page's context.
+</p>
+
+<p>
+For safe testing, use a local demonstration page and a test account. Demonstrate execution with a visible alert or a controlled page change. Do not collect real session cookies, send them to external listeners, or impersonate other users.
+</p>
+
+<h4>9.4.6 XSS Defense</h4>
+
+<ul>
+<li><strong>Output encoding:</strong> Encode untrusted data for its specific output context.</li>
+<li><strong>Content Security Policy (CSP):</strong> Restrict which scripts the browser can execute.</li>
+<li><strong>HttpOnly cookies:</strong> Prevent JavaScript from reading protected session cookies.</li>
+<li><strong>Secure frameworks:</strong> Use safe templating and rendering features.</li>
+<li><strong>Input validation:</strong> Reject data that does not match the expected format.</li>
+</ul>
+
+<div class="tip">
+<strong>Important:</strong> HttpOnly reduces the risk of cookie theft through JavaScript. It does not prevent XSS itself. Output encoding and safe DOM handling remain essential.
+</div>
+
+<hr>
+
+<h3>Chapter Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>OWASP Top 10</td><td>Provides a reference for major web application security risks.</td></tr>
+<tr><td>Burp Suite</td><td>Proxy captures traffic, Repeater tests requests, Intruder automates controlled testing, and Comparer identifies differences.</td></tr>
+<tr><td>SQL Injection</td><td>Untrusted input changes database query behavior. Parameterized queries provide the primary defense.</td></tr>
+<tr><td>Reflected XSS</td><td>Request input appears unsafely in the response.</td></tr>
+<tr><td>Stored XSS</td><td>Unsafe content is stored and later displayed to users.</td></tr>
+<tr><td>DOM-based XSS</td><td>Client-side code processes untrusted data unsafely.</td></tr>
+<tr><td>XSS Defense</td><td>Use output encoding, safe DOM APIs, CSP, and HttpOnly cookies.</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h3>Chapter 9 Exercises</h3>
+
+<p><strong>Estimated time:</strong> 10–12 hours.</p>
+
+<ol>
+<li>
+<strong>OWASP Top 10 Review:</strong>
+Read the OWASP Top 10 2025 introduction. Write a paragraph explaining three significant changes from the 2021 edition.
+</li>
+
+<li>
+<strong>PortSwigger SQL Injection Labs:</strong>
+Complete the Apprentice-level labs:
+<ul>
+<li>SQL injection vulnerability in WHERE clause allowing retrieval of hidden data.</li>
+<li>SQL injection vulnerability allowing login bypass.</li>
+</ul>
+Document the test inputs and explain why the vulnerable application behaves as it does.
+</li>
+
+<li>
+<strong>PortSwigger XSS Labs:</strong>
+Complete the Apprentice-level labs:
+<ul>
+<li>Reflected XSS into HTML context with nothing encoded.</li>
+<li>Stored XSS into HTML context with nothing encoded.</li>
+</ul>
+Document your testing process and explain the vulnerable output context.
+</li>
+
+<li>
+<strong>Filter Analysis:</strong>
+Complete the lab involving blocked HTML tags and custom allowed tags. Explain how you inspected the response and identified weaknesses in the filtering approach.
+</li>
+
+<li>
+<strong>TryHackMe:</strong>
+Complete the OWASP Top 10 room or Burp Suite: The Basics room. Record five security lessons from the exercises.
+</li>
+</ol>
+
+<div class="exercise">
+<h3>Practical Project: Secure a Web Application</h3>
+
+<p>Build a small application with a search form and a comment section.</p>
+
+<ul>
+<li>Use parameterized database queries.</li>
+<li>Validate user input.</li>
+<li>Encode displayed user content.</li>
+<li>Configure secure session cookies.</li>
+<li>Test the application using Burp Suite.</li>
+<li>Write a short report describing the vulnerabilities you prevented.</li>
+</ul>
+
+<p><strong>Expected result:</strong> A working web application with safer database queries, input handling, and browser output.</p>
+</div>
+
+<hr>
+
+<h3>Next Chapter Preview</h3>
+
+<p>
+<strong>Chapter 10: Penetration Testing Methodology.</strong>
+You will learn how to plan a penetration testing engagement, define scope, collect evidence, document findings, assess business risk, and write a professional security report.
+</p>
+
+</section>
+<!-- END CHAPTER 9 -->
+<!-- CHAPTER 10: PENETRATION TESTING METHODOLOGY -->
+<section class="chapter">
+
+<h2>Chapter 10: Penetration Testing Methodology</h2>
+
+<p>
+Chapters 7 through 9 covered reconnaissance, exploitation, and web application attacks. This chapter introduces the professional discipline behind those technical activities.
+</p>
+
+<p>
+A penetration test is a structured security engagement. It requires legal authorization, defined objectives, controlled testing, evidence collection, and a professional report. The goal is to identify security weaknesses and help an organization fix them.
+</p>
+
+<hr>
+
+<h3>10.1 Why Methodology Matters</h3>
+
+<p>
+Professional penetration testers follow established methodologies to make assessments consistent, repeatable, and useful. Three widely used references are:
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OWASP WSTG</td>
+<td>Guidance for testing web application security.</td>
+</tr>
+<tr>
+<td>PTES</td>
+<td>Structured approach to penetration testing engagements.</td>
+</tr>
+<tr>
+<td>NIST SP 800-115</td>
+<td>Technical guidance for information security testing and assessment.</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+An ad-hoc test can miss important areas and produce inconsistent results. A methodology helps testers define coverage, collect evidence, and compare findings across assessments.
+</p>
+
+<h4>10.1.1 Professional Skills Beyond Exploitation</h4>
+
+<p>
+Professional penetration testing requires more than technical knowledge. You must also understand:
+</p>
+
+<ul>
+<li>Planning and scoping.</li>
+<li>Legal authorization.</li>
+<li>Risk assessment.</li>
+<li>Evidence management.</li>
+<li>Technical documentation.</li>
+<li>Report writing and communication.</li>
+<li>Remediation recommendations.</li>
+</ul>
+
+<div class="tip">
+<strong>Professional principle:</strong> A successful penetration test produces findings that an organization can understand, reproduce, prioritize, and fix.
+</div>
+
+<hr>
+
+<h3>10.2 Scoping and Rules of Engagement</h3>
+
+<h4>10.2.1 Written Authorization Is Non-Negotiable</h4>
+
+<p>
+Before sending test traffic or attempting to access a system, obtain written authorization from someone with the legal authority to grant it.
+</p>
+
+<p>
+Written authorization establishes the permitted activities and protects both the tester and the organization by documenting the agreed scope.
+</p>
+
+<p>The authorization should identify:</p>
+
+<ul>
+<li><strong>In-scope assets:</strong> Approved domains, IP ranges, applications, and APIs.</li>
+<li><strong>Excluded assets:</strong> Systems that must not be tested.</li>
+<li><strong>Testing window:</strong> Dates and times when testing is permitted.</li>
+<li><strong>Permitted techniques:</strong> Approved testing methods and restrictions.</li>
+<li><strong>Emergency contact:</strong> The person to contact if an incident occurs.</li>
+<li><strong>Stop condition:</strong> The circumstances that require testing to stop immediately.</li>
+</ul>
+
+<h4>10.2.2 Rules of Engagement (RoE)</h4>
+
+<p>
+The Rules of Engagement document defines how the assessment will operate. It prevents misunderstandings and limits operational risk.
+</p>
+
+<p>Important RoE requirements include:</p>
+
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Stop-test list</td><td>Identifies assets that must never be tested or require special approval.</td></tr>
+<tr><td>Authorized source IPs</td><td>Helps the client's security team identify approved testing traffic.</td></tr>
+<tr><td>Rate limits</td><td>Prevents testing from overwhelming systems.</td></tr>
+<tr><td>Data handling</td><td>Defines how sensitive information must be protected and reported.</td></tr>
+<tr><td>SOC coordination</td><td>Prevents authorized testing from being mistaken for an uncontrolled incident.</td></tr>
+<tr><td>Emergency procedure</td><td>Defines who to contact and when testing must stop.</td></tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Important:</strong> The stop-test list is a critical part of the Rules of Engagement. Never assume that permission to test one system includes permission to test connected systems.
+</div>
+
+<h4>10.2.3 Test Accounts and Access Levels</h4>
+
+<p>
+Application testing often requires accounts with different permission levels. Two accounts with the same role can help assess whether one user can access another user's information.
+</p>
+
+<p>For example:</p>
+
+<ul>
+<li>User A owns invoice 1001.</li>
+<li>User B owns invoice 1002.</li>
+<li>The tester checks whether User A can access User B's invoice.</li>
+<li>The tester records the result without modifying or exposing unnecessary data.</li>
+</ul>
+
+<p>Professional assessments commonly use three testing approaches:</p>
+
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Knowledge Provided</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Black Box</td><td>Little or no internal information.</td><td>Simulates an external attacker.</td></tr>
+<tr><td>White Box</td><td>Full access to relevant source code and architecture.</td><td>Allows detailed internal assessment.</td></tr>
+<tr><td>Gray Box</td><td>Partial information and selected accounts.</td><td>Combines external and internal testing perspectives.</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h3>10.3 Execution Standards: What Professional Testing Looks Like</h3>
+
+<h4>10.3.1 Manual Testing Is Irreplaceable</h4>
+
+<p>
+Automated scanners can identify common weaknesses, outdated components, missing security headers, and obvious configuration problems. However, they cannot reliably understand every application's business rules.
+</p>
+
+<p>Manual testing is particularly important for identifying:</p>
+
+<ul>
+<li>Broken access control.</li>
+<li>Business logic vulnerabilities.</li>
+<li>Unauthorized workflow changes.</li>
+<li>Price manipulation weaknesses.</li>
+<li>Insecure object references.</li>
+<li>Incorrect permission checks.</li>
+</ul>
+
+<p>
+For example, an application may allow a user to change the price of an item in a shopping cart. A scanner may not recognize that the price should come from a trusted server-side database rather than a browser request.
+</p>
+
+<p>
+A tester must understand the application's intended behavior and compare it with its actual behavior.
+</p>
+
+<h4>10.3.2 Evidence Collection During Testing</h4>
+
+<p>
+Collect evidence while performing the assessment. Do not wait until the end to reconstruct the testing process.
+</p>
+
+<p>For every finding, record:</p>
+
+<ul>
+<li>The exact HTTP request and response, where applicable.</li>
+<li>Screenshots showing the relevant behavior.</li>
+<li>The date and time of the test.</li>
+<li>The test account and permission level used.</li>
+<li>The affected endpoint or system.</li>
+<li>The test objective and observed result.</li>
+<li>The steps needed to reproduce the issue safely.</li>
+</ul>
+
+<h4>Evidence Management Table</h4>
+
+<table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>What It Proves</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>HTTP request</td><td>Shows the input sent to the application.</td></tr>
+<tr><td>HTTP response</td><td>Shows how the application handled the input.</td></tr>
+<tr><td>Screenshot</td><td>Provides visual confirmation of the behavior.</td></tr>
+<tr><td>Timestamp</td><td>Identifies when the test occurred.</td></tr>
+<tr><td>Tester notes</td><td>Explain the objective and interpretation of the result.</td></tr>
+</tbody>
+</table>
+
+<div class="tip">
+<strong>Evidence rule:</strong> Protect all collected evidence. Remove unnecessary personal information and follow the client's data retention and confidentiality requirements.
+</div>
+
+<hr>
+
+<h3>10.4 The Report: The Real Deliverable</h3>
+
+<h4>10.4.1 Two Audiences, One Document</h4>
+
+<p>
+A professional penetration testing report must communicate with two main audiences.
+</p>
+
+<p><strong>Executives and management:</strong></p>
+
+<ul>
+<li>Need to understand business risk.</li>
+<li>Need to know which systems are affected.</li>
+<li>Need to understand the possible consequences.</li>
+<li>Need clear remediation priorities.</li>
+</ul>
+
+<p><strong>Developers and technical teams:</strong></p>
+
+<ul>
+<li>Need the exact affected endpoint or component.</li>
+<li>Need reproducible testing steps.</li>
+<li>Need supporting evidence.</li>
+<li>Need specific remediation guidance.</li>
+</ul>
+
+<h4>10.4.2 Standard Report Structure</h4>
+
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Audience</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Executive Summary</td>
+<td>Executives and board</td>
+<td>Scope, major findings, business impact, and priorities.</td>
+</tr>
+<tr>
+<td>Scope and Methodology</td>
+<td>Security managers and auditors</td>
+<td>Systems tested, exclusions, and standards followed.</td>
+</tr>
+<tr>
+<td>Findings</td>
+<td>Developers and administrators</td>
+<td>Vulnerabilities, reproduction steps, and evidence.</td>
+</tr>
+<tr>
+<td>Remediation Roadmap</td>
+<td>IT leadership and DevOps</td>
+<td>Recommended fixes and implementation priorities.</td>
+</tr>
+<tr>
+<td>Appendices</td>
+<td>Technical teams</td>
+<td>Supporting technical data and relevant tool output.</td>
+</tr>
+</tbody>
+</table>
+
+<h4>10.4.3 Writing Findings That Get Fixed</h4>
+
+<p>
+Every finding should follow a consistent structure. A developer should be able to understand the issue and reproduce it without guessing.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Finding Field</th>
+<th>Required Information</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Title</td><td>A clear description of the vulnerability.</td></tr>
+<tr><td>Severity</td><td>Technical rating and business-context explanation.</td></tr>
+<tr><td>Description</td><td>What the vulnerability is and where it exists.</td></tr>
+<tr><td>Steps to Reproduce</td><td>Numbered steps showing how to verify the issue.</td></tr>
+<tr><td>Impact</td><td>What an attacker could realistically achieve.</td></tr>
+<tr><td>Remediation</td><td>Specific steps to correct the vulnerability.</td></tr>
+</tbody>
+</table>
+
+<h4>Example Finding</h4>
+
+<div class="exercise">
+
+<p><strong>Title:</strong> Unauthorized access to another user's invoice.</p>
+
+<p><strong>Severity:</strong> High, subject to the affected data, exposure, and business context.</p>
+
+<p><strong>Description:</strong> The application does not correctly verify whether the authenticated user owns the requested invoice.</p>
+
+<p><strong>Steps to Reproduce:</strong></p>
+
+<ol>
+<li>Log in using an authorized test account.</li>
+<li>Open an invoice belonging to that test account.</li>
+<li>Record the invoice identifier.</li>
+<li>Use a second authorized test account to assess access controls in the agreed test environment.</li>
+<li>Check whether the application correctly rejects access to the first account's invoice.</li>
+</ol>
+
+<p><strong>Impact:</strong> A user may access information belonging to another account if the server does not enforce ownership checks.</p>
+
+<p><strong>Remediation:</strong> Verify ownership and authorization on the server for every invoice request. Do not rely on hidden buttons or client-side checks.</p>
+
+</div>
+
+<h4>10.4.4 Risk Rating: Beyond CVSS</h4>
+
+<p>
+CVSS provides a standardized way to describe technical vulnerability severity. However, technical severity alone does not determine business priority.
+</p>
+
+<p>Consider these factors:</p>
+
+<ul>
+<li><strong>Exposure:</strong> Is the system internet-facing or internal-only?</li>
+<li><strong>Authentication:</strong> Does exploitation require a valid account?</li>
+<li><strong>Known exploitation:</strong> Is the vulnerability actively exploited or listed in a trusted known-exploited vulnerability catalogue?</li>
+<li><strong>Business context:</strong> Does the system handle payments, personal information, salaries, or critical operations?</li>
+<li><strong>Impact:</strong> Could exploitation cause data disclosure, financial loss, or service disruption?</li>
+</ul>
+
+<p>
+A vulnerability with a lower CVSS score on a public customer portal may deserve faster remediation than a higher-scoring issue on an isolated internal system. The final priority should reflect the actual attack path and business consequences.
+</p>
+
+<div class="tip">
+<strong>Reporting principle:</strong> Explain why a finding is High, Medium, or Low. Do not copy a scanner score without considering the affected organization's environment.
+</div>
+
+<hr>
+
+<h3>Chapter Summary</h3>
+
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Key Takeaway</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Authorization</td><td>Written permission is mandatory. The scope defines which assets can be tested.</td></tr>
+<tr><td>Rules of Engagement</td><td>Define testing windows, restrictions, emergency contacts, and the stop-test list.</td></tr>
+<tr><td>Manual Testing</td><td>Access control and business logic weaknesses require human judgment.</td></tr>
+<tr><td>Evidence Collection</td><td>Capture requests, responses, screenshots, timestamps, and notes during testing.</td></tr>
+<tr><td>Report Structure</td><td>Executives need business impact. Technical teams need reproducible findings and specific fixes.</td></tr>
+<tr><td>Risk Rating</td><td>CVSS is a starting point. Exposure, exploitation conditions, and business impact determine remediation priority.</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h3>Chapter 10 Exercises</h3>
+
+<p><strong>Estimated time:</strong> 6–8 hours.</p>
+
+<ol>
+
+<li>
+<strong>Scope Document Draft:</strong>
+Write a one-page scope and Rules of Engagement document for a hypothetical web application assessment. Include:
+<ul>
+<li>In-scope assets.</li>
+<li>Excluded assets.</li>
+<li>Testing window.</li>
+<li>Permitted techniques.</li>
+<li>Emergency contact.</li>
+<li>Stop-test conditions.</li>
+</ul>
+</li>
+
+<li>
+<strong>Report Critique:</strong>
+Find a publicly available penetration testing report. Identify its sections. Assess whether the executive summary is understandable to a non-technical reader and whether the findings are reproducible. Write a paragraph explaining your assessment.
+</li>
+
+<li>
+<strong>Finding Rewrite:</strong>
+Choose a finding from your PortSwigger or TryHackMe exercises. Write it using this structure:
+<ul>
+<li>Title.</li>
+<li>Severity and rationale.</li>
+<li>Description.</li>
+<li>Steps to reproduce.</li>
+<li>Impact.</li>
+<li>Remediation.</li>
+</ul>
+</li>
+
+<li>
+<strong>CVSS vs Business Risk:</strong>
+A vulnerability has a CVSS score of 8.1 (High). It affects an internal HR application that requires VPN access and authentication. The application contains salary data. Compare its priority with a CVSS 6.5 vulnerability on an internet-facing customer portal that requires no authentication. Explain your decision.
+</li>
+
+<li>
+<strong>TryHackMe:</strong>
+Complete the Penetration Testing Fundamentals or Red Team Fundamentals room. Summarize the engagement lifecycle and identify the professional responsibilities of a penetration tester.
+</li>
+
+</ol>
+
+<div class="exercise">
+<h3>Practical Project: Build a Professional Pentest Report</h3>
+
+<p>Use a deliberately vulnerable application in an authorized lab.</p>
+
+<ul>
+<li>Define the assessment scope.</li>
+<li>Write the Rules of Engagement.</li>
+<li>Perform controlled security testing.</li>
+<li>Collect and organize evidence.</li>
+<li>Identify and rate findings.</li>
+<li>Write an executive summary.</li>
+<li>Prepare technical remediation recommendations.</li>
+</ul>
+
+<p><strong>Expected result:</strong> A professional penetration testing report containing scope, methodology, findings, evidence, risk ratings, and remediation recommendations.</p>
+</div>
+
+<hr>
+
+<h3>Next Chapter Preview</h3>
+
+<p>
+<strong>Chapter 11: Security Operations Centers (SOCs).</strong>
+Part IV begins with Defensive Security. You will learn how security teams monitor systems, detect suspicious activity, investigate alerts, and respond to attacks. You will move from the attacker's perspective to the defender's perspective.
+</p>
+
+</section>
+<!-- END CHAPTER 10 -->
