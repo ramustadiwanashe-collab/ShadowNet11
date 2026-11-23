@@ -1,1 +1,612 @@
-{% extends "base.html" %}{% block title %}ShadowCyber{% endblock %}{% block content %}<section class="page-head"><span class="eyebrow">SHADOWCYBER · DEFENSIVE LEARNING</span><h1>Cybersecurity challenges</h1><p>Build security knowledge through short exercises. These are educational knowledge checks, not live attack targets.</p></section><div class="cards">{% for c in challenges %}<article class="card challenge"><span class="tag">{{ c.level }}</span><h3>{{ c.title }}</h3><p>{{ c.question }}</p><label>Your answer<input class="challenge-answer" placeholder="Enter your answer"></label><button class="btn primary challenge-submit" data-id="{{ c.id }}">Check answer</button><small class="challenge-feedback"></small><details><summary>Show hint</summary><p>{{ c.hint }}</p></details></article>{% endfor %}</div>{% endblock %}{% block scripts %}<script src="{{ url_for('static',filename='js/cyber.js') }}"></script>{% endblock %}
+
+{% extends "base.html" %}
+
+{% block title %}ShadowCyber | ShadowNet{% endblock %}
+
+{% block content %}
+
+<!-- HERO SECTION -->
+<section class="page-head cyber-hero">
+
+    <span class="eyebrow">
+        SHADOWCYBER · DEFENSIVE SECURITY ACADEMY
+    </span>
+
+    <h1>Cybersecurity Learning Centre</h1>
+
+    <p>
+        Develop practical cybersecurity knowledge.
+        Understand digital threats, protect systems,
+        investigate vulnerabilities and improve security.
+    </p>
+
+    <div class="cyber-status">
+        <span class="tag">DEFENSIVE LEARNING</span>
+        <span class="tag">BEGINNER FRIENDLY</span>
+        <span class="tag">PRACTICAL KNOWLEDGE</span>
+    </div>
+
+</section>
+
+
+<!-- INTRODUCTION -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">01 · INTRODUCTION</span>
+        <h2>What is Cybersecurity?</h2>
+    </div>
+
+    <div class="card">
+        <p>
+            Cybersecurity is the practice of protecting computers,
+            networks, applications and digital information against
+            unauthorized access, misuse, damage and disruption.
+        </p>
+
+        <p>
+            Security professionals identify risks, investigate
+            suspicious activity, secure systems and respond to
+            incidents.
+        </p>
+
+        <p>
+            ShadowCyber teaches the foundations of these practices
+            through structured lessons and knowledge checks.
+        </p>
+    </div>
+
+</section>
+
+
+<!-- CORE PRINCIPLES -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">02 · SECURITY FOUNDATIONS</span>
+        <h2>The CIA Security Triad</h2>
+
+        <p>
+            Three fundamental principles guide information security.
+        </p>
+    </div>
+
+    <div class="cards">
+
+        <article class="card">
+            <span class="tag">CONFIDENTIALITY</span>
+            <h3>Protect information</h3>
+
+            <p>
+                Ensure that only authorized people can access
+                confidential information.
+            </p>
+
+            <ul>
+                <li>Access control</li>
+                <li>Encryption</li>
+                <li>Authentication</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">INTEGRITY</span>
+            <h3>Maintain accuracy</h3>
+
+            <p>
+                Protect information against unauthorized
+                modification or destruction.
+            </p>
+
+            <ul>
+                <li>Data validation</li>
+                <li>Hash verification</li>
+                <li>Digital signatures</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">AVAILABILITY</span>
+            <h3>Keep systems accessible</h3>
+
+            <p>
+                Ensure authorized users can access systems
+                and information when required.
+            </p>
+
+            <ul>
+                <li>Backups</li>
+                <li>System monitoring</li>
+                <li>Disaster recovery</li>
+            </ul>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- LEARNING PATHS -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">03 · LEARNING PATHS</span>
+        <h2>Cybersecurity Specializations</h2>
+
+        <p>
+            Explore the major areas of professional cybersecurity.
+        </p>
+    </div>
+
+    <div class="cards">
+
+        <article class="card">
+            <span class="tag">FOUNDATIONS</span>
+            <h3>Network Security</h3>
+
+            <p>
+                Learn how to protect network infrastructure,
+                communication and connected devices.
+            </p>
+
+            <ul>
+                <li>Firewalls</li>
+                <li>Network segmentation</li>
+                <li>Secure protocols</li>
+                <li>Network monitoring</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">APPLICATION SECURITY</span>
+            <h3>Web Security</h3>
+
+            <p>
+                Understand how developers protect websites,
+                APIs and web applications.
+            </p>
+
+            <ul>
+                <li>Input validation</li>
+                <li>Authentication</li>
+                <li>Session security</li>
+                <li>Access control</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">DEFENSIVE SECURITY</span>
+            <h3>Security Operations</h3>
+
+            <p>
+                Learn how security teams monitor systems,
+                investigate alerts and respond to threats.
+            </p>
+
+            <ul>
+                <li>Log analysis</li>
+                <li>Threat detection</li>
+                <li>Incident response</li>
+                <li>Security monitoring</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">DIGITAL INVESTIGATION</span>
+            <h3>Digital Forensics</h3>
+
+            <p>
+                Study how investigators preserve and examine
+                digital evidence.
+            </p>
+
+            <ul>
+                <li>Evidence preservation</li>
+                <li>File metadata</li>
+                <li>System logs</li>
+                <li>Investigation reports</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">RISK MANAGEMENT</span>
+            <h3>Security Governance</h3>
+
+            <p>
+                Understand policies, compliance, risk assessment
+                and security management.
+            </p>
+
+            <ul>
+                <li>Risk assessment</li>
+                <li>Security policies</li>
+                <li>Access reviews</li>
+                <li>Security awareness</li>
+            </ul>
+        </article>
+
+        <article class="card">
+            <span class="tag">ETHICAL SECURITY</span>
+            <h3>Authorized Penetration Testing</h3>
+
+            <p>
+                Learn the methodology of assessing systems
+                within an explicitly authorized environment.
+            </p>
+
+            <ul>
+                <li>Scope definition</li>
+                <li>Asset discovery</li>
+                <li>Vulnerability assessment</li>
+                <li>Responsible reporting</li>
+            </ul>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- COMMON THREATS -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">04 · THREAT INTELLIGENCE</span>
+        <h2>Understand Common Cyber Threats</h2>
+    </div>
+
+    <div class="cards">
+
+        <article class="card">
+            <h3>Phishing</h3>
+            <p>
+                Fraudulent messages designed to trick people
+                into revealing credentials or sensitive information.
+            </p>
+            <strong>Defence:</strong>
+            <p>Verify senders, inspect links and use MFA.</p>
+        </article>
+
+        <article class="card">
+            <h3>Malware</h3>
+            <p>
+                Malicious software designed to compromise,
+                disrupt or gain unauthorized access to systems.
+            </p>
+            <strong>Defence:</strong>
+            <p>Use endpoint protection and install trusted updates.</p>
+        </article>
+
+        <article class="card">
+            <h3>Ransomware</h3>
+            <p>
+                Malware that encrypts or blocks access to
+                information and demands payment.
+            </p>
+            <strong>Defence:</strong>
+            <p>Maintain isolated backups and restrict permissions.</p>
+        </article>
+
+        <article class="card">
+            <h3>Social Engineering</h3>
+            <p>
+                Manipulation techniques used to persuade people
+                to disclose information or perform unsafe actions.
+            </p>
+            <strong>Defence:</strong>
+            <p>Verify requests and follow security procedures.</p>
+        </article>
+
+        <article class="card">
+            <h3>Credential Attacks</h3>
+            <p>
+                Attempts to misuse stolen, weak or reused
+                account credentials.
+            </p>
+            <strong>Defence:</strong>
+            <p>Use unique passwords, MFA and login monitoring.</p>
+        </article>
+
+        <article class="card">
+            <h3>Denial of Service</h3>
+            <p>
+                Attempts to make a service unavailable
+                to legitimate users.
+            </p>
+            <strong>Defence:</strong>
+            <p>Use traffic filtering, monitoring and resilience planning.</p>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- OWASP -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">05 · WEB APPLICATION SECURITY</span>
+        <h2>OWASP Security Topics</h2>
+
+        <p>
+            Study common web application security risks.
+        </p>
+    </div>
+
+    <div class="card">
+
+        <h3>Important security weaknesses</h3>
+
+        <ol>
+            <li>
+                <strong>Broken Access Control:</strong>
+                Users access resources beyond their permissions.
+            </li>
+
+            <li>
+                <strong>Cryptographic Failures:</strong>
+                Sensitive information lacks adequate protection.
+            </li>
+
+            <li>
+                <strong>Injection:</strong>
+                Untrusted input is interpreted as executable commands
+                or queries.
+            </li>
+
+            <li>
+                <strong>Insecure Design:</strong>
+                Applications lack adequate security controls
+                at the design stage.
+            </li>
+
+            <li>
+                <strong>Security Misconfiguration:</strong>
+                Incorrect settings expose systems to unnecessary risk.
+            </li>
+
+            <li>
+                <strong>Authentication Failures:</strong>
+                Weak authentication controls allow account compromise.
+            </li>
+
+            <li>
+                <strong>Software Integrity Failures:</strong>
+                Software updates or dependencies cannot be trusted.
+            </li>
+
+            <li>
+                <strong>Logging and Monitoring Failures:</strong>
+                Security incidents go undetected or lack useful records.
+            </li>
+        </ol>
+
+        <p>
+            These are educational topic summaries. Study the current
+            OWASP Top 10 documentation for the complete risk categories.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- DEFENSIVE WORKFLOW -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">06 · INCIDENT RESPONSE</span>
+        <h2>How Security Teams Respond</h2>
+    </div>
+
+    <div class="cards">
+
+        <article class="card">
+            <h3>01. Preparation</h3>
+            <p>
+                Establish security policies, monitoring systems,
+                response procedures and backup plans.
+            </p>
+        </article>
+
+        <article class="card">
+            <h3>02. Detection</h3>
+            <p>
+                Identify suspicious activity through alerts,
+                logs and system monitoring.
+            </p>
+        </article>
+
+        <article class="card">
+            <h3>03. Containment</h3>
+            <p>
+                Limit the impact of an incident and protect
+                unaffected systems.
+            </p>
+        </article>
+
+        <article class="card">
+            <h3>04. Eradication</h3>
+            <p>
+                Remove the root cause and address the
+                vulnerabilities that enabled the incident.
+            </p>
+        </article>
+
+        <article class="card">
+            <h3>05. Recovery</h3>
+            <p>
+                Restore affected services and verify that
+                systems operate securely.
+            </p>
+        </article>
+
+        <article class="card">
+            <h3>06. Lessons Learned</h3>
+            <p>
+                Document the incident and improve security
+                controls and response procedures.
+            </p>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- SECURITY PRACTICES -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">07 · PRACTICAL SECURITY</span>
+        <h2>Essential Security Practices</h2>
+    </div>
+
+    <div class="card">
+
+        <ul>
+            <li>Use unique passwords for different accounts.</li>
+            <li>Enable multi-factor authentication.</li>
+            <li>Keep operating systems and applications updated.</li>
+            <li>Back up important files regularly.</li>
+            <li>Review account permissions.</li>
+            <li>Encrypt sensitive information.</li>
+            <li>Monitor unusual account activity.</li>
+            <li>Verify links and attachments before opening them.</li>
+            <li>Use secure Wi-Fi configurations.</li>
+            <li>Report suspicious activity promptly.</li>
+        </ul>
+
+    </div>
+
+</section>
+
+
+<!-- CHALLENGES -->
+<section class="cyber-section" id="challenges">
+
+    <div class="section-heading">
+
+        <span class="eyebrow">08 · KNOWLEDGE ASSESSMENT</span>
+
+        <h2>Cybersecurity Challenges</h2>
+
+        <p>
+            Test your understanding through short exercises.
+            Complete each challenge and check your answer.
+        </p>
+
+    </div>
+
+    <div class="cards">
+
+        {% for c in challenges %}
+
+        <article class="card challenge">
+
+            <span class="tag">{{ c.level }}</span>
+
+            <h3>{{ c.title }}</h3>
+
+            <p>{{ c.question }}</p>
+
+            <label>
+                Your answer
+
+                <input
+                    type="text"
+                    class="challenge-answer"
+                    placeholder="Enter your answer"
+                    autocomplete="off"
+                >
+            </label>
+
+            <button
+                type="button"
+                class="btn primary challenge-submit"
+                data-id="{{ c.id }}"
+            >
+                Check answer
+            </button>
+
+            <small
+                class="challenge-feedback"
+                aria-live="polite"
+            ></small>
+
+            <details>
+                <summary>Show hint</summary>
+                <p>{{ c.hint }}</p>
+            </details>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- ETHICAL RULES -->
+<section class="cyber-section">
+
+    <div class="section-heading">
+        <span class="eyebrow">09 · RESPONSIBLE PRACTICE</span>
+        <h2>Cybersecurity Ethics</h2>
+    </div>
+
+    <div class="card">
+
+        <p>
+            All security testing must have explicit authorization.
+            Never test systems, networks, websites or accounts
+            belonging to others without permission.
+        </p>
+
+        <ul>
+            <li>Respect privacy and confidentiality.</li>
+            <li>Follow the approved testing scope.</li>
+            <li>Do not access or modify unauthorized data.</li>
+            <li>Report vulnerabilities responsibly.</li>
+            <li>Preserve evidence appropriately.</li>
+            <li>Follow applicable laws and organizational policies.</li>
+        </ul>
+
+    </div>
+
+</section>
+
+
+<!-- NEXT STEPS -->
+<section class="cyber-section">
+
+    <div class="card">
+
+        <span class="eyebrow">YOUR NEXT STEP</span>
+
+        <h2>Continue Your Security Journey</h2>
+
+        <p>
+            Build your foundations in Linux, networking,
+            programming and web development.
+        </p>
+
+        <a href="{{ url_for('academy') }}"
+           class="btn primary">
+            Explore ShadowNet Academy
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+
+<script src="{{ url_for('static', filename='js/cyber.js') }}"></script>
+
+{% endblock %}
