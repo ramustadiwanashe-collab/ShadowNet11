@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#03050c">
+    <title>Programming Department | ShadowNet Ultra</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #03050c;
+            --panel: #0a0f1f;
+            --panel-2: #111a30;
+            --line: rgba(90, 180, 255, .15);
+            --text: #eaf0ff;
+            --muted: #8a9bc2;
+            --cyan: #4ae3ff;
+            --violet: #b06bff;
+            --green: #7dffb0;
+            --glow-cyan: 0 0 15px rgba(74, 227, 255, .3);
+            --glow-violet: 0 0 20px rgba(176, 107, 255, .25);
+            --shadow-deep: 0 25px 40px -15px rgba(0, 0, 0, .8);
+            --font-futuristic: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse at 15% 0%, rgba(50, 130, 255, .25), transparent 45rem),
+                radial-gradient(ellipse at 95% 15%, rgba(150, 70, 255, .2), transparent 40rem),
+                linear-gradient(145deg, #03050c 0%, #060b18 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            font-family: var(--font-futuristic);
+            letter-spacing: 0.01em;
+            line-height: 1.5;
+        }
+        a { color: inherit; text-decoration: none; }
+        .shell { width: min(1280px, calc(100% - 48px)); margin: 0 auto; }
+
+        /* ----- TOP BAR / NAV ----- */
+        .topbar {
+            border-bottom: 1px solid rgba(74, 227, 255, .2);
+            background: rgba(3, 5, 12, .75);
+            backdrop-filter: blur(18px) saturate(180%);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+        .brand {
+            font-weight: 900;
+            letter-spacing: .22em;
+            font-size: 1.3rem;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff 0%, var(--cyan) 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 8px rgba(74, 227, 255, .6));
+        }
+        .brand span { color: var(--cyan); -webkit-text-fill-color: var(--cyan); filter: drop-shadow(0 0 10px var(--cyan)); }
+        .nav-link {
+            color: var(--muted);
+            font-size: .9rem;
+            font-weight: 500;
+            border: 1px solid rgba(74, 227, 255, .25);
+            border-radius: 40px;
+            padding: 10px 22px;
+            background: rgba(10, 15, 31, .6);
+            backdrop-filter: blur(8px);
+            transition: all .2s ease;
+            box-shadow: 0 0 12px rgba(74, 227, 255, .1);
+        }
+        .nav-link:hover {
+            border-color: var(--cyan);
+            color: var(--text);
+            box-shadow: var(--glow-cyan), inset 0 0 10px rgba(74, 227, 255, .1);
+            transform: translateY(-1px);
+        }
+
+        /* ----- HERO ----- */
+        .hero { padding: 72px 0 36px; }
+        .eyebrow {
+            color: var(--cyan);
+            font-size: .78rem;
+            font-weight: 800;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(74, 227, 255, .6);
+            display: inline-block;
+            border-left: 3px solid var(--cyan);
+            padding-left: 14px;
+            background: linear-gradient(90deg, rgba(74, 227, 255, .1), transparent);
+            border-radius: 0 20px 20px 0;
+            padding: 4px 20px 4px 18px;
+        }
+        h1 {
+            max-width: 880px;
+            margin: 20px 0 16px;
+            font-size: clamp(2.6rem, 7vw, 4.8rem);
+            line-height: 1.05;
+            letter-spacing: -.03em;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffffff, #c2e0ff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(74, 227, 255, .4);
+        }
+        .hero p {
+            max-width: 760px;
+            color: var(--muted);
+            line-height: 1.8;
+            font-size: 1.1rem;
+            border-left: 2px solid rgba(176, 107, 255, .4);
+            padding-left: 24px;
+            margin-top: 10px;
+        }
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 32px;
+        }
+        .stat {
+            border: 1px solid rgba(74, 227, 255, .25);
+            background: rgba(10, 15, 31, .7);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 14px 22px;
+            color: var(--muted);
+            font-size: .9rem;
+            font-weight: 500;
+            box-shadow: 0 0 20px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .05);
+            transition: all .2s ease;
+        }
+        .stat:hover {
+            border-color: var(--violet);
+            box-shadow: var(--glow-violet);
+            transform: translateY(-2px);
+        }
+        .stat strong {
+            color: var(--text);
+            font-weight: 800;
+            margin-right: 8px;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #fff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ----- SEARCH PANEL ----- */
+        .search-panel {
+            margin: 20px 0 48px;
+            padding: 22px;
+            border: 1px solid rgba(74, 227, 255, .2);
+            background: rgba(10, 15, 31, .8);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255, 255, 255, .06);
+        }
+        .search-form { display: flex; gap: 14px; }
+        .search-form input {
+            min-width: 0;
+            flex: 1;
+            padding: 16px 22px;
+            border: 1px solid rgba(74, 227, 255, .25);
+            border-radius: 18px;
+            outline: none;
+            background: rgba(3, 5, 12, .8);
+            color: var(--text);
+            font: inherit;
+            font-size: 1rem;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, .6);
+            transition: all .2s ease;
+        }
+        .search-form input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 2px rgba(74, 227, 255, .2), inset 0 2px 10px rgba(0, 0, 0, .6);
+        }
+        .search-form input::placeholder { color: #4a6088; font-weight: 400; }
+        .search-form button {
+            border: 0;
+            border-radius: 18px;
+            padding: 0 36px;
+            color: #03050c;
+            background: linear-gradient(135deg, var(--cyan), #2ab4d9);
+            font-weight: 800;
+            font-size: .95rem;
+            letter-spacing: .03em;
+            cursor: pointer;
+            transition: all .2s ease;
+            box-shadow: 0 0 25px rgba(74, 227, 255, .5);
+            text-transform: uppercase;
+        }
+        .search-form button:hover {
+            background: linear-gradient(135deg, #6be9ff, #3ec8f0);
+            box-shadow: 0 0 35px var(--cyan);
+            transform: scale(1.02);
+        }
+
+        /* ----- SECTION HEADS ----- */
+        .section-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            margin: 56px 0 22px;
+            border-bottom: 1px solid rgba(74, 227, 255, .15);
+            padding-bottom: 12px;
+        }
+        h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            background: linear-gradient(135deg, #fff, #b0d0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(74, 227, 255, .2);
+        }
+        .section-head p, .muted { color: var(--muted); font-size: .95rem; font-weight: 400; }
+
+        /* ----- CATEGORY GRID ----- */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+        }
+        .category {
+            padding: 24px;
+            border: 1px solid rgba(74, 227, 255, .15);
+            border-radius: 24px;
+            background: linear-gradient(145deg, rgba(15, 22, 45, .95), rgba(8, 12, 28, .98));
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255, 255, 255, .05);
+            transition: all .25s ease;
+        }
+        .category:hover {
+            border-color: rgba(176, 107, 255, .45);
+            box-shadow: 0 0 40px rgba(176, 107, 255, .15), inset 0 0 20px rgba(176, 107, 255, .05);
+            transform: translateY(-4px);
+        }
+        .category h3 {
+            margin: 0 0 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            display: inline-block;
+            border-left: 4px solid var(--violet);
+            padding-left: 12px;
+            text-shadow: 0 0 20px rgba(176, 107, 255, .5);
+        }
+        .category p {
+            margin: 0 0 22px;
+            color: var(--muted);
+            font-size: .92rem;
+            line-height: 1.65;
+        }
+        .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 16px;
+            border: 1px solid rgba(74, 227, 255, .2);
+            border-radius: 40px;
+            background: rgba(74, 227, 255, .08);
+            color: #c7f6ff;
+            font-size: .85rem;
+            font-weight: 500;
+            transition: all .2s ease;
+            box-shadow: 0 0 12px rgba(0, 0, 0, .3);
+        }
+        .chip:hover {
+            border-color: var(--cyan);
+            background: rgba(74, 227, 255, .2);
+            box-shadow: 0 0 20px rgba(74, 227, 255, .4);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+        /* ----- LANGUAGE GRID ----- */
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+        .language-card {
+            display: block;
+            padding: 22px;
+            border: 1px solid rgba(74, 227, 255, .15);
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(13, 20, 40, .95), rgba(7, 11, 24, .98));
+            backdrop-filter: blur(6px);
+            transition: all .25s ease;
+            box-shadow: var(--shadow-deep);
+            position: relative;
+            overflow: hidden;
+        }
+        .language-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+        .language-card:hover {
+            border-color: rgba(74, 227, 255, .5);
+            transform: translateY(-6px);
+            box-shadow: 0 30px 40px -20px rgba(0, 0, 0, .9), 0 0 30px rgba(74, 227, 255, .1);
+        }
+        .language-card:hover::after { opacity: 1; }
+        .language-card strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.01em;
+        }
+        .language-card small {
+            color: var(--muted);
+            font-size: .82rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            font-weight: 500;
+        }
+        .status {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--green);
+            font-size: .72rem;
+            letter-spacing: .1em;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(125, 255, 176, .1);
+            padding: 5px 12px;
+            border-radius: 30px;
+            border: 1px solid rgba(125, 255, 176, .3);
+            box-shadow: 0 0 15px rgba(125, 255, 176, .2);
+        }
+
+        /* ----- LEVELS ----- */
+        .levels {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin: 24px 0 56px;
+        }
+        .level {
+            padding: 20px;
+            border: 1px solid rgba(176, 107, 255, .15);
+            border-radius: 20px;
+            background: rgba(10, 15, 31, .8);
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-deep);
+            transition: all .2s ease;
+        }
+        .level:hover {
+            border-color: var(--violet);
+            box-shadow: 0 0 30px rgba(176, 107, 255, .15);
+        }
+        .level strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(176, 107, 255, .5);
+        }
+        .level span {
+            color: var(--muted);
+            font-size: .85rem;
+            line-height: 1.6;
+        }
+
+        /* ----- EMPTY STATE ----- */
+        .empty {
+            padding: 32px;
+            border: 1px dashed rgba(74, 227, 255, .3);
+            border-radius: 20px;
+            color: var(--muted);
+            background: rgba(10, 15, 31, .5);
+            text-align: center;
+            font-size: .95rem;
+            backdrop-filter: blur(4px);
+        }
+
+        /* ----- FOOTER ----- */
+        footer {
+            border-top: 1px solid rgba(74, 227, 255, .15);
+            padding: 32px 0;
+            color: var(--muted);
+            font-size: .85rem;
+            background: rgba(3, 5, 12, .6);
+            backdrop-filter: blur(10px);
+        }
+        footer .shell { text-align: center; letter-spacing: .05em; }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 900px) {
+            .category-grid { grid-template-columns: 1fr; }
+            .language-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 760px) {
+            .shell { width: calc(100% - 32px); }
+            .hero { padding-top: 48px; }
+            h1 { font-size: clamp(2rem, 8vw, 3.2rem); }
+            .section-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
+        @media (max-width: 500px) {
+            .language-grid { grid-template-columns: 1fr; }
+            .search-form { flex-direction: column; }
+            .search-form button { min-height: 54px; }
+            .levels { grid-template-columns: 1fr; }
+            .stats { flex-direction: column; }
+            .stat { width: 100%; }
+            .nav { flex-wrap: wrap; justify-content: center; padding: 12px 0; }
+            .brand { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="shell nav">
+            <a class="brand" href="{{ url_for('index') if 'index' in current_app.view_functions else '/' }}">SHADOW<span>NET</span></a>
+            <a class="nav-link" href="{{ url_for('dashboard') if 'dashboard' in current_app.view_functions else '/' }}">Back to dashboard</a>
+        </div>
+    </header>
+
+    <main class="shell">
+        <section class="hero">
+            <div class="eyebrow">ShadowNet Academy / 09 · Ultra</div>
+            <h1>{{ department.name }}</h1>
+            <p>{{ department.description }}</p>
+            <div class="stats">
+                <div class="stat"><strong>{{ language_count }}</strong> unique catalogue entries</div>
+                <div class="stat"><strong>4</strong> learning levels</div>
+                <div class="stat"><strong>12</strong> study categories</div>
+            </div>
+        </section>
+
+        <section class="search-panel" aria-label="Search programming languages">
+            <form class="search-form" method="get" action="{{ url_for('programming.programming_home') }}">
+                <input type="search" name="q" value="{{ search_query }}" placeholder="Search Python, C++, web, databases..." aria-label="Search languages or categories">
+                <button type="submit">Search library</button>
+            </form>
+        </section>
+
+        {% if search_query %}
+            <div class="section-head">
+                <div>
+                    <h2>Search results</h2>
+                    <p>Matches for “{{ search_query }}”</p>
+                </div>
+            </div>
+            {% if languages %}
+                <div class="language-grid">
+                    {% for language in languages %}
+                        <a class="language-card" href="{{ url_for('programming.programming_language', slug=language.slug) }}">
+                            <strong>{{ language.name }}</strong>
+                            <small>{{ language.kind|replace('-', ' ')|title }}</small>
+                            <span class="status">Curriculum planned</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty">No matching languages found. Try another name or category.</div>
+            {% endif %}
+        {% endif %}
+
+        <div class="section-head">
+            <div>
+                <h2>Explore by category</h2>
+                <p>Choose a technical field to find its languages.</p>
+            </div>
+        </div>
+
+        {% if categories %}
+            <div class="category-grid">
+                {% for category in categories %}
+                    <section class="category">
+                        <h3>{{ category.name }}</h3>
+                        <p>{{ category.description }}</p>
+                        <div class="chips">
+                            {% for slug, name, kind in category.languages %}
+                                <a class="chip" href="{{ url_for('programming.programming_language', slug=slug) }}" title="{{ kind|replace('-', ' ')|title }}">{{ name }}</a>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty">No categories match this search.</div>
+        {% endif %}
+
+        <div class="section-head">
+            <div>
+                <h2>Language library</h2>
+                <p>Open a language to view its curriculum status and learning path.</p>
+            </div>
+        </div>
+        <div class="language-grid">
+            {% for language in languages %}
+                <a class="language-card" href="{{ url_for('programming.programming_language', slug=language.slug) }}">
+                    <strong>{{ language.name }}</strong>
+                    <small>{{ language.kind|replace('-', ' ')|title }}</small>
+                    <span class="status">Curriculum planned</span>
+                </a>
+            {% else %}
+                <div class="empty">No languages found.</div>
+            {% endfor %}
+        </div>
+
+        <div class="section-head">
+            <div>
+                <h2>Learning progression</h2>
+                <p>Each language will use the same four-stage progression.</p>
+            </div>
+        </div>
+        <div class="levels">
+            {% for level in department.levels %}
+                <div class="level">
+                    <strong>{{ level.name }}</strong>
+                    <span>{{ level.description }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="shell">ShadowNet {{ department.version }}. Programming education catalogue. · Ultra Age Interface</div>
+    </footer>
+</body>
+  </html>
